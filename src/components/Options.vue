@@ -6,6 +6,7 @@
                 item-value="val"
                 item-text="disp"
                 @input="setTheme"
+                :value="$store.state.current"
                 :color="$store.getters.current.textColor"
                 :dark="$store.getters.current.isDark"
         >
@@ -14,23 +15,39 @@
 </template>
 
 <script>
-    import {mapMutations} from 'vuex';
+    import store from "../store/index";
 
+    if (localStorage.theme) {
+        store.commit('setTheme', localStorage.theme);
+        document.body.style.backgroundColor = store.getters.current.backgroundColor;
+    }
     export default {
         name: "Options",
         methods: {
-            ...mapMutations([
-                'setTheme'
-            ]),
+            setTheme(newt) {
+                store.state.current = newt;
+                localStorage.theme = newt;
+                store.commit('setTheme', newt);
+                document.body.style.backgroundColor = store.getters.current.backgroundColor;
+            }
         },
         data() {
             return {
-                items: [{disp: 'Light', val: 'light'}, {disp: 'Dark', val: 'dark'}, {disp: 'Midnight', val: 'midnight'}]
+                items: [{
+                    disp: 'Light',
+                    val: 'light'
+                }, {
+                    disp: 'Dark',
+                    val: 'dark'
+                }, {
+                    disp: 'Midnight',
+                    val: 'midnight'
+                }],
             }
-        }
+        },
+
     }
 </script>
 
-<style scoped>
-
+<style>
 </style>

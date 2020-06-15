@@ -3,33 +3,33 @@
         <v-app-bar
                 app
                 :style="{background: $store.getters.current.primary}"
-                clipped-left
+                :clipped-left="$vuetify.breakpoint.mdAndUp"
         >
-            <div class="d-flex">
-                <v-img
-                        alt="MD Logo"
-                        class="shrink mr-4"
-                        contain
-                        src="https://mangadex.org/images/misc/navbar.svg?3"
-                        transition="scale-transition"
-                        width="60"
-                />
-                <h1 :style="{color: $store.getters.current.textColor}">MD@Home Client Interface</h1>
-            </div>
+            <v-app-bar-nav-icon
+                    class="hidden-md-and-up"
+                    :style="{color: $store.getters.current.textColor}"
+                    @click.stop="drawer = !drawer"
+            />
+            <v-img
+                    alt="MD Logo"
+                    class="shrink mr-4"
+                    contain
+                    src="https://mangadex.org/images/misc/navbar.svg?3"
+                    transition="scale-transition"
+                    width="60"
+                    :hidden="!$vuetify.breakpoint.mdAndUp"
+            />
+            <h1 :style="{color: $store.getters.current.textColor}" class="hidden-sm-and-down">MD@Home Client
+                Interface</h1>
+            <h1 :style="{color: $store.getters.current.textColor}" class="hidden-md-and-up">MD@H Client</h1>
             <v-spacer></v-spacer>
-            <!--            <v-btn-->
-            <!--                    href=""-->
-            <!--                    target="_blank"-->
-            <!--                    text-->
-            <!--            >-->
-            <!--                <span class="mr-2"></span>-->
-            <!--            </v-btn>-->
         </v-app-bar>
         <v-navigation-drawer
+                v-model="drawer"
                 :style="{background: $store.getters.current.primary}"
-                :expand-on-hover="true"
-                :mini-variant="true"
-                :permanent="true"
+                :expand-on-hover="$vuetify.breakpoint.mdAndUp"
+                :mini-variant="$vuetify.breakpoint.mdAndUp"
+                :permanent="$vuetify.breakpoint.mdAndUp"
                 app
                 clipped
                 floating
@@ -60,27 +60,27 @@
                         <v-icon :style="{color: $store.getters.current.textColor}">{{ item.icon }}</v-icon>
                     </v-list-item-icon>
                     <v-list-item-content>
-                        <v-list-item-title :style="{color: $store.getters.current.textColor}">{{ item.title }}</v-list-item-title>
+                        <v-list-item-title :style="{color: $store.getters.current.textColor}">{{ item.title }}
+                        </v-list-item-title>
                     </v-list-item-content>
                 </v-list-item>
             </v-list>
         </v-navigation-drawer>
-        <v-content>
-            <v-container fluid pd-0>
-                <transition name="fade">
-                    <router-view/>
-                </transition>
-            </v-container>
-        </v-content>
+        <v-main>
+            <transition name="fade">
+                <router-view/>
+            </transition>
+        </v-main>
     </v-app>
 </template>
 
 <script>
-    // import dash from './components/Dashboard';
     export default {
         name: 'App',
         components: {}, data() {
             return {
+                drawer: null,
+                settings: 'settings',
                 items: [
                     {title: 'Dashboard', icon: 'mdi-view-dashboard', route: '/dash'},
                     {title: 'Console', icon: 'mdi-console', route: '/cons'},
@@ -88,6 +88,6 @@
                     {title: 'About', icon: 'mdi-information-outline', route: '/info'},
                 ]
             }
-        },
+        }
     };
 </script>

@@ -5,7 +5,7 @@ Vue.use(Vuex);
 
 const state = {
     current: 'light',
-    themes:{
+    themes: {
         light: {
             backgroundColor: '#f0f0f0',
             textColor: '#202020',
@@ -45,18 +45,16 @@ const state = {
     }
 };
 
-const mutations = {
-    setTheme(state, theme) {
-        state.current = theme;
-    }
-};
-
 const getters = {
     current: state => state.themes[state.current]
 };
 
 export default new Vuex.Store({
     state,
-    mutations,
+    mutations: {
+        setTheme(state, theme) {
+            state.current = theme;
+        }
+    },
     getters,
 });
