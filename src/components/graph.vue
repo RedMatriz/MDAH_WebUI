@@ -8,25 +8,24 @@
 <script>
     import Chart from 'chart.js';
 
-    let chart = null;
+    let chart = [];
     export default {
         name: "graph",
         props: ['graphId', 'type', 'data', 'options', 'mdUpHeight', 'height'],
         methods: {
             createChart(chartID) {
                 const ctx = document.getElementById(chartID);
-                chart = new Chart(ctx, {
+                chart.push({chart: new Chart(ctx, {
                     type: this.type,
                     data: this.data,
                     options: this.options,
-                });
+                }), chartid : chartID});
             },
             getChart() {
                 return chart;
             }
-        },
-        mounted() {
-            this.createChart(this.graphId,)
+        }, mounted() {
+            this.createChart(this.graphId)
         }
     }
 </script>

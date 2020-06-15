@@ -4,6 +4,7 @@
                 app
                 :style="{background: $store.getters.current.primary}"
                 :clipped-left="$vuetify.breakpoint.mdAndUp"
+                :hide-on-scroll="!$vuetify.breakpoint.mdAndUp"
         >
             <v-app-bar-nav-icon
                     class="hidden-md-and-up"
@@ -68,7 +69,9 @@
         </v-navigation-drawer>
         <v-main>
             <transition name="fade">
-                <router-view/>
+                <keep-alive>
+                    <router-view/>
+                </keep-alive>
             </transition>
         </v-main>
     </v-app>
