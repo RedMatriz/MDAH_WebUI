@@ -1,28 +1,20 @@
 <template>
-    <v-app :style="{background: $vuetify.theme.themes['light'].background}">
+    <v-app :style="{background: $store.getters.current.backgroundColor}">
         <v-app-bar
                 app
-                color="primary"
-                class="accent--text"
+                :style="{background: $store.getters.current.primary}"
                 clipped-left
         >
             <div class="d-flex">
                 <v-img
                         alt="MD Logo"
                         class="shrink mr-4"
-                        contain="true"
+                        contain
                         src="https://mangadex.org/images/misc/navbar.svg?3"
                         transition="scale-transition"
                         width="60"
                 />
-<!--                <v-img-->
-<!--                        alt="MD Logo"-->
-<!--                        contain-->
-<!--                        src="https://mangadex.org/images/misc/navbar.svg?3"-->
-<!--                        transition="scale-transition"-->
-<!--                        width="40"-->
-<!--                    />-->
-                <h1>MD@Home Client Interface</h1>
+                <h1 :style="{color: $store.getters.current.textColor}">MD@Home Client Interface</h1>
             </div>
             <v-spacer></v-spacer>
             <!--            <v-btn-->
@@ -34,7 +26,7 @@
             <!--            </v-btn>-->
         </v-app-bar>
         <v-navigation-drawer
-                color="primary"
+                :style="{background: $store.getters.current.primary}"
                 :expand-on-hover="true"
                 :mini-variant="true"
                 :permanent="true"
@@ -46,13 +38,14 @@
                     dense
                     nav
                     class="pt-2"
+                    v-bind:dark="$store.getters.current.isDark"
             >
                 <v-list-item>
                     <v-list-item-icon>
-                        <v-icon color="accent">mdi-format-list-bulleted</v-icon>
+                        <v-icon :style="{color: $store.getters.current.textColor}">mdi-format-list-bulleted</v-icon>
                     </v-list-item-icon>
                     <v-list-item-content>
-                        <v-list-item-title class="accent--text">Menu</v-list-item-title>
+                        <v-list-item-title :style="{color: $store.getters.current.textColor}">Menu</v-list-item-title>
                     </v-list-item-content>
                 </v-list-item>
                 <v-divider/>
@@ -64,10 +57,10 @@
                         class="mt-1"
                 >
                     <v-list-item-icon>
-                        <v-icon color="accent">{{ item.icon }}</v-icon>
+                        <v-icon :style="{color: $store.getters.current.textColor}">{{ item.icon }}</v-icon>
                     </v-list-item-icon>
                     <v-list-item-content>
-                        <v-list-item-title class="accent--text">{{ item.title }}</v-list-item-title>
+                        <v-list-item-title :style="{color: $store.getters.current.textColor}">{{ item.title }}</v-list-item-title>
                     </v-list-item-content>
                 </v-list-item>
             </v-list>
@@ -96,6 +89,5 @@
                 ]
             }
         },
-
     };
 </script>

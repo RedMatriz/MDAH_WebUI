@@ -1,5 +1,5 @@
 <template>
-    <v-container fluid class="accent--text">
+    <v-container fluid :style="{color: $store.getters.current.textColor}">
         <h1>Console</h1>
     </v-container>
 </template>
