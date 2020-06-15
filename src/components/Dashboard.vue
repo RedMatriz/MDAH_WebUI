@@ -31,18 +31,23 @@
                        md-up-height="300"
                        type="line"
                        :data="{
-                                labels: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+                                labels: [],
                                 datasets: [{
                                     label: 'Bytes Up',
-                                    data: [0, 15, 0, 0, 0, 27, 0, 0, 8],
-                                    backgroundColor: [$store.getters.current.green + 'd0']
+                                    data: [],
+                                    backgroundColor: $store.getters.current.green + 'd0',
                                 },{
                                     label: 'Bytes Down',
-                                    data: [0, 0, -3, 0, 0, -5, 0, 0, -2],
-                                    backgroundColor: [$store.getters.current.red + 'd0']
+                                    data: [],
+                                    backgroundColor: $store.getters.current.red + 'd0',
                                 }]}"
                        :options="{
                                 maintainAspectRatio: false,
+                                elements: {
+                                        line: {
+                                            tension: 0
+                                        }
+                                    },
                                 legend: {
                                     labels: {
                                         fontColor: $store.getters.current.textColor,
@@ -57,12 +62,20 @@
                                         ticks: {
                                             beginAtZero: true,
                                             fontColor: $store.getters.current.textColor,
+                                            maxTicksLimit: 11,
                                         }, gridLines: {
                                             color: $store.getters.current.accent
                                         }}],
                                     xAxes: [{
                                         ticks: {
                                             fontColor: $store.getters.current.textColor,
+                                            maxTicksLimit: 11,
+                                            maxRotation: 45,
+                                            minRotation: 0,
+                                            callback: function(value, index, values) {
+                                                let temp = value.toString();
+                                                return temp.substr(temp.indexOf('T') + 1, 5);
+                                            }
                                         }, gridLines: {
                                             color: $store.getters.current.accent
                                         }}]}}"
@@ -76,14 +89,19 @@
                        md-up-height="300"
                        type="line"
                        :data="{
-                                labels: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+                                labels: [],
                                 datasets: [{
                                     label: 'Requests Served',
-                                    data: [1, 2, 3, 4, 5, 5, 6, 7, 8],
-                                    backgroundColor: [$store.getters.current.accent1]
+                                    data: [],
+                                    backgroundColor: $store.getters.current.accent1
                                 }]}"
                        :options="{
                             maintainAspectRatio: false,
+                            elements: {
+                                    line: {
+                                        tension: 0
+                                    }
+                                },
                             legend: {
                                 labels: {
                                     fontColor: $store.getters.current.textColor,
@@ -99,12 +117,20 @@
                                     ticks: {
                                         beginAtZero: true,
                                         fontColor: $store.getters.current.textColor,
+                                        maxTicksLimit: 11,
                                     }, gridLines: {
                                         color: $store.getters.current.accent
                                     }}],
                                 xAxes: [{
                                     ticks: {
                                         fontColor: $store.getters.current.textColor,
+                                        maxTicksLimit: 11,
+                                        maxRotation: 45,
+                                        minRotation: 0,
+                                            callback: function(value, index, values) {
+                                                let temp = value.toString();
+                                                return temp.substr(temp.indexOf('T') + 1, 5);
+                                            }
                                     }, gridLines: {
                                         color: $store.getters.current.accent
                                     }}]}}"
@@ -116,14 +142,19 @@
                        md-up-height="300"
                        type="line"
                        :data="{
-                                labels: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+                                labels: [],
                                 datasets: [{
                                     label: 'Size On Disk',
-                                    data: [1, 2, 3, 4, 5, 5, 6, 7, 8],
-                                    backgroundColor: [$store.getters.current.accent1]
+                                    data: [],
+                                    backgroundColor: $store.getters.current.accent1
                                 }]}"
                        :options="{
                                 maintainAspectRatio: false,
+                                elements: {
+                                        line: {
+                                            tension: 0
+                                        }
+                                    },
                                 legend: {
                                     labels: {
                                         fontColor: $store.getters.current.textColor,
@@ -138,12 +169,20 @@
                                         ticks: {
                                             beginAtZero: true,
                                             fontColor: $store.getters.current.textColor,
+                                            maxTicksLimit: 11,
                                         }, gridLines: {
                                             color: $store.getters.current.accent
                                         }}],
                                     xAxes: [{
                                         ticks: {
                                             fontColor: $store.getters.current.textColor,
+                                            maxTicksLimit: 11,
+                                            maxRotation: 45,
+                                            minRotation: 0,
+                                            callback: function(value, index, values) {
+                                                let temp = value.toString();
+                                                return temp.substr(temp.indexOf('T') + 1, 5);
+                                            }
                                         }, gridLines: {
                                             color: $store.getters.current.accent
                                         }}]}}"
@@ -198,13 +237,13 @@
                             charts[i].chart.data.datasets[0].data[2] = data.browser_cached;
                         }
                         if (charts[i].chartid === "reqserved") {
-                            charts[i].chart.data.labels.push('1');
+                            charts[i].chart.data.labels.push('yyyy-mm-ddThh:mm:ss:msZ');
                             charts[i].chart.data.datasets.forEach((dataset) => {
                                 dataset.data.push(data.requests_served);
                             });
                         }
                         if (charts[i].chartid === "netact") {
-                            charts[i].chart.data.labels.push('1');
+                            charts[i].chart.data.labels.push('yyyy-mm-ddThh:mm:ss:msZ');
                             charts[i].chart.data.datasets.forEach((dataset) => {
                                 if (dataset.label === "Bytes Up")
                                     dataset.data.push(data.bytes_sent);
@@ -213,7 +252,7 @@
                             });
                         }
                         if (charts[i].chartid === "sizondisk") {
-                            charts[i].chart.data.labels.push('1');
+                            charts[i].chart.data.labels.push('yyyy-mm-ddThh:mm:ss:msZ');
                             charts[i].chart.data.datasets.forEach((dataset) => {
                                 dataset.data.push(data.bytes_on_disk);
                             });
