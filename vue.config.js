@@ -4,13 +4,13 @@ module.exports = {
   ],
   pwa: {
     name: 'MD@H Client Interface',
-    themeColor: '#4DBA87',
+    themeColor: '#f79421',
     msTileColor: '#000000',
     appleMobileWebAppCapable: 'yes',
     appleMobileWebAppStatusBarStyle: 'black',
     manifestOptions: {
       short_name: 'MD@H',
-      start_url: '/#/dash'
+      start_url: '/'
     },
     // configure the workbox plugin
     workboxPluginMode: 'InjectManifest',

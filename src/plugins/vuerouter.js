@@ -6,7 +6,7 @@ import about from "@/components/About";
 import VueRouter from "vue-router";
 
 const routes = [
-    {path: '/dash', component: dashboard, name: 'dash'},
+    {path: '/', component: dashboard},
     {path: '/cons', component: console},
     {path: '/opts', component: options},
     {path: '/info', component: about},

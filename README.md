@@ -29,23 +29,23 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 
 - #### Data
 
- - [ ] Hits
- - [ ] Misses
- - [ ] Bytes sent
- - [ ] Browser cached
- - [ ] Requests served
- - [ ] Size on disk
-
+ - [x] Hits
+ - [x] Misses
+ - [x] Bytes sent
+ - [x] Browser cached
+ - [x] Requests served
+ - [x] Size on disk
+ - [ ] Client image response time
+ - [ ] Average client image response time
+ - [ ] last Ping to server
+ - [ ] Disk IOPS
+ 
 - #### Interaction
 
  - [ ] scroll-less stats
  - [ ] toggle for graphs numbers
- - [ ] Client image response time
- - [ ] Average client image response time
- - [ ] Change over time and totals for stats
+ - [x] Change over time and totals for stats
  - [ ] Unit scaling
- - [ ] Disk IOPS
- - [ ] last Ping to server
  - [ ] Data caching
  - [ ] all time stats
 
@@ -60,8 +60,8 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
  - [ ] Data refresh rate
  - [ ] Data time frame
  - [ ] Theme customizer
- - [ ] Themes/Styles
- - [ ] Animations
+ - [x] Themes/Styles
+ - [x] Animations
 
 ### Other
  - [ ] Multiple client support

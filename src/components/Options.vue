@@ -1,6 +1,9 @@
 <template>
     <v-container fluid :style="{color: $store.getters.current.textColor}">
-        <h1>Settings</h1>
+        <v-container fluid
+                     :style="{backgroundColor: $store.getters.current.secondary + $store.getters.alpha}">
+            <h1>Settings</h1>
+        </v-container>
         <v-select
                 :items="items"
                 item-value="val"
@@ -11,6 +14,8 @@
                 :dark="$store.getters.current.isDark"
         >
         </v-select>
+        <h2>Ignore this lazy information header</h2>
+        <p>The theme updates live, but wont change graph colors.<br>Reloading will solve this issue</p>
     </v-container>
 </template>
 
