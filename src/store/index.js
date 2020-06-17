@@ -51,7 +51,7 @@ const state = {
     data: {
         stats: [],
         maxPoints: 61,
-        maxStorePoints: 3601,
+        maxStorePoints: 1801,
     }
 };
 
@@ -59,16 +59,29 @@ const getters = {
     current: state => state.themes[state.current],
     hasBgImage: state => state.hasBgImage,
     bgImg: state => state.bgImage,
-    alpha: state => {return (state.hasBgImage ? state.themes[state.current].backgroundAlpha : 'ff')},
+    alpha: state => {
+        return (state.hasBgImage ? state.themes[state.current].backgroundAlpha : 'ff')
+    },
     data: state => state.data
 };
 
+const mutations = {
+    setTheme(state, theme) {
+        state.current = theme;
+    },
+    setStats(state, val) {
+        state.data.stats = val;
+    },
+    pushStats(state, val) {
+        state.data.stats.push(val);
+        if (state.data.stats.length > state.data.maxStorePoints) {
+            state.data.stats.splice(0, state.data.stats.length - state.data.maxStorePoints)
+        }
+    }
+}
+
 export default new Vuex.Store({
     state,
-    mutations: {
-        setTheme(state, theme) {
-            state.current = theme;
-        }
-    },
+    mutations,
     getters,
 });

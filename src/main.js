@@ -7,6 +7,8 @@ import './registerServiceWorker'
 
 Vue.config.productionTip = false
 
+window.Event = new Vue();
+
 new Vue({
     render: h => h(App),
     router,

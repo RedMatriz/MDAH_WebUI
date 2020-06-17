@@ -82,15 +82,18 @@
         />
         <v-main>
             <transition name="fade">
-                <keep-alive>
-                    <router-view/>
-                </keep-alive>
+                <!--                <keep-alive>-->
+                <router-view/>
+                <!--                </keep-alive>-->
             </transition>
         </v-main>
     </v-app>
 </template>
 
 <script>
+    import store from "@/store";
+
+    // let num = 0;
     export default {
         name: 'App',
         data() {
@@ -99,11 +102,42 @@
                 settings: 'settings',
                 items: [
                     {title: 'Dashboard', icon: 'mdi-view-dashboard', route: '/'},
-                    {title: 'Console', icon: 'mdi-console', route: '/cons'},
+                    // {title: 'Console', icon: 'mdi-console', route: '/cons'},
                     {title: 'Settings', icon: 'mdi-cog-outline', route: '/opts'},
-                    {title: 'Client Info', icon: 'mdi-information-outline', route: '/info'},
+                    // {title: 'Client Info', icon: 'mdi-information-outline', route: '/info'},
                 ]
             }
+        }, mounted() {
+            function get(){
+                fetch("/api/stats")
+                    .then(response => response.json())
+                    .then(response => {
+                        this.updateValues(response);
+                        store.commit('pushStats', response);
+                        localStorage.stats = JSON.stringify(store.getters.data.stats);
+                        return response;
+                    });
+                // let date = new Date();
+                // num += Math.floor(Math.random() * 1000000);
+                // let dstring = date.getFullYear() + "-" + date.getMonth() + "-" + date.getDate() + "T" + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + "." + date.getMilliseconds() + "Z";
+                // let response = "{\"" + dstring + "\": {\"requests_served\": " +
+                //     Math.floor(Math.random() * 10) + ",\"cache_hits\": " +
+                //     Math.floor(Math.random() * 10) + ",\"cache_misses\": " +
+                //     Math.floor(Math.random() * 10) + ",\"browser_cached\": " +
+                //     Math.floor(Math.random() * 10) + ",\"bytes_sent\": " +
+                //     Math.floor(Math.random() * 100) + ",\"bytes_on_disk\":" +
+                //     num + "}}"
+                // let par = JSON.parse(response);
+                // store.commit('pushStats', par);
+                // localStorage.stats = JSON.stringify(store.getters.data.stats);
+                // return par;
+            }
+            setInterval(function () {
+                Event.$emit('update', get());
+            }, 2000)
+            Event.$on('pull', function (){
+                Event.$emit('update', get())
+            })
         }
     };
 </script>

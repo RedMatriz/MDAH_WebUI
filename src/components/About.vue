@@ -4,6 +4,11 @@
                      :style="{backgroundColor: $store.getters.current.secondary + $store.getters.alpha}">
             <h1>Info</h1>
         </v-container>
+        <p>
+            You shouldn't be here
+        </p>
+        <v-img src="https://i.kym-cdn.com/photos/images/newsfeed/001/273/780/f05.png">
+        </v-img>
     </v-container>
 </template>
 

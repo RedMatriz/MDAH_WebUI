@@ -25,6 +25,9 @@
             },
             getChart() {
                 return chart;
+            },
+            clearChart(){
+                chart = [];
             }
         }, mounted() {
             this.createChart(this.graphId)

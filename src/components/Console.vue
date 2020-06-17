@@ -4,6 +4,11 @@
                      :style="{backgroundColor: $store.getters.current.secondary + $store.getters.alpha}">
             <h1>Console</h1>
         </v-container>
+        <p>
+            Stop looking for hidden pages
+        </p>
+        <v-img src="https://i.stack.imgur.com/jDfXy.jpg">
+        </v-img>
     </v-container>
 </template>
 

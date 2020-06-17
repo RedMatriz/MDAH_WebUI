@@ -14,6 +14,9 @@
                 :dark="$store.getters.current.isDark"
         >
         </v-select>
+<!--        <v-text-field>-->
+
+<!--        </v-text-field>-->
         <h2>Ignore this lazy information header</h2>
         <p>The theme updates live, but wont change graph colors.<br>Reloading will solve this issue</p>
     </v-container>
