@@ -2,7 +2,7 @@
     <v-container fluid :style="{color: $store.getters.current.textColor}">
         <v-container fluid
                      :style="{backgroundColor: $store.getters.current.secondary + $store.getters.alpha}">
-            <h1>Info</h1>
+            <h1 class="pl-1">Info</h1>
         </v-container>
         <p>
             You shouldn't be here

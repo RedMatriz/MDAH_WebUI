@@ -1,14 +1,15 @@
 <template>
     <v-app style="background: rgba(0,0,0,0)">
         <v-app-bar
-                app
+                :app="$store.getters.showAppBar"
                 :style="{background: $store.getters.current.primary + $store.getters.alpha}"
-                :clipped-left="$vuetify.breakpoint.mdAndUp"
-                :hide-on-scroll="!$vuetify.breakpoint.mdAndUp"
+                :clipped-left="!$vuetify.breakpoint.mdAndDown"
+                :hide-on-scroll="$vuetify.breakpoint.mdAndDown"
                 floating
+                :hidden="!$vuetify.breakpoint.mdAndDown && !$store.getters.showAppBar"
         >
             <v-app-bar-nav-icon
-                    class="hidden-md-and-up"
+                    class="hidden-lg-and-up"
                     :style="{color: $store.getters.current.textColor}"
                     @click.stop="drawer = !drawer"
             />
@@ -19,7 +20,6 @@
                     src="https://mangadex.org/images/misc/navbar.svg?3"
                     transition="scale-transition"
                     width="60"
-                    :hidden="!$vuetify.breakpoint.mdAndUp"
             />
             <h1 :style="{color: $store.getters.current.textColor}" class="hidden-sm-and-down">MD@Home Client
                 Interface</h1>
@@ -29,18 +29,18 @@
         <v-navigation-drawer
                 v-model="drawer"
                 :style="{background: $store.getters.current.primary + $store.getters.alpha}"
-                :expand-on-hover="$vuetify.breakpoint.mdAndUp"
-                :mini-variant="$vuetify.breakpoint.mdAndUp"
-                :permanent="$vuetify.breakpoint.mdAndUp"
+                :expand-on-hover="!$vuetify.breakpoint.mdAndDown"
+                :mini-variant="!$vuetify.breakpoint.mdAndDown"
+                :permanent="!$vuetify.breakpoint.mdAndDown"
                 app
-                clipped
+                :clipped="$store.getters.showAppBar"
                 floating
         >
             <v-list
                     dense
                     nav
                     class="pt-2"
-                    v-bind:dark="$store.getters.current.isDark"
+                    :dark="$store.getters.current.isDark"
             >
                 <v-list-item>
                     <v-list-item-icon>
@@ -51,7 +51,7 @@
                         </v-list-item-title>
                     </v-list-item-content>
                 </v-list-item>
-                <v-divider/>
+                <div style="width: 100%; height: 1px;" :style="{backgroundColor: $store.getters.current.accent2}"/>
                 <v-list-item
                         v-for="item in items"
                         :key="item.title"
@@ -70,6 +70,7 @@
             </v-list>
         </v-navigation-drawer>
         <v-img
+                v-if="$store.getters.hasBgImage"
                 :src="$store.getters.bgImg"
                 :style="{
                 position: 'fixed',
@@ -77,14 +78,11 @@
                 left: 0,
                 width: '100%',
                 height: '100%',
-                display: ($store.getters.hasBgImage  ? 'initial' : 'none'),
                 }"
         />
         <v-main>
             <transition name="fade">
-                <!--                <keep-alive>-->
                 <router-view/>
-                <!--                </keep-alive>-->
             </transition>
         </v-main>
     </v-app>
@@ -93,56 +91,111 @@
 <script>
     import store from "@/store";
 
-    // let num = 0;
+    if (localStorage.hasbg)
+        store.commit('setHasBg', localStorage.hasbg === 'true')
+    if (localStorage.showBar)
+        store.commit('showAppBar', localStorage.showBar === 'true')
+    if (localStorage.theme)
+        store.commit('setTheme', localStorage.theme);
+    if (localStorage.bgURL)
+        store.commit('setBgUrl', localStorage.bgURL)
+    if (localStorage.layout)
+        try {
+            store.commit('setLayout', JSON.parse(localStorage.layout));
+        } catch (e) {
+            store.commit('resetLayout');
+            console.log(e)
+            console.log('using default layout')
+        }
+    if (localStorage.refresh)
+        store.commit('setRefresh', parseInt(localStorage.refresh))
+    document.body.style.backgroundColor = store.getters.current.backgroundColor;
+    if (localStorage.stats && store.getters.data.stats.length < 1)
+        store.commit('setStats', JSON.parse(localStorage.stats))
+    let clock;
     export default {
         name: 'App',
         data() {
             return {
                 drawer: null,
                 settings: 'settings',
+                showbar: true,
                 items: [
                     {title: 'Dashboard', icon: 'mdi-view-dashboard', route: '/'},
                     // {title: 'Console', icon: 'mdi-console', route: '/cons'},
                     {title: 'Settings', icon: 'mdi-cog-outline', route: '/opts'},
                     // {title: 'Client Info', icon: 'mdi-information-outline', route: '/info'},
-                ]
+                ],
+                evnt: Event,
             }
         }, mounted() {
-            function get(){
-                fetch("/api/stats")
+            if (store.getters.data.stats.length >= 1) {
+                for (let i = 0; i < store.getters.data.stats.length; i++) {
+                    let key = Object.keys(store.getters.data.stats[i])[0]
+                    let inst = store.getters.data.stats[i][key];
+                    let hist = i > 0 ? store.getters.data.stats[i - 1][Object.keys(store.getters.data.stats[i - 1])[0]] : null;
+                    let time = new Date(key);
+                    store.commit('pushHits', inst.cache_hits);
+                    store.commit('pushMisses', inst.cache_misses);
+                    store.commit('pushCached', inst.browser_cached);
+                    store.commit('pushDate', time)
+                    store.commit('pushBytesSent', [time, inst.bytes_sent]);
+                    store.commit('pushBytesSentChange', [time, hist ? inst.bytes_sent - hist.bytes_sent : 0]);
+                    store.commit('pushReqServ', [time, inst.requests_served]);
+                    store.commit('pushReqServChange', [time, hist ? inst.requests_served - hist.requests_served : 0]);
+                    store.commit('pushSizeDisk', [time, inst.bytes_on_disk]);
+                    store.commit('pushSizeDiskChange', [time, hist ? inst.bytes_on_disk - hist.bytes_on_disk : 0]);
+                }
+                let stats = store.getters.data.stats;
+                if (stats.length >= 1)
+                    for (let i = 1; i < stats.length; i++) {
+                        if (Object.keys(stats[i])[0] === Object.keys(stats[i - 1])[0]) {
+                            store.commit('spliceStats', [i, 1]);
+                            i--
+                        }
+                    }
+            }
+            fetch("api/pastStats")
+                .then(response => response.json())
+                .then(response => {
+                    response.forEach((k) => store.commit('pushStats', JSON.parse('{' + k + ': ' + JSON.stringify(response[k]) + '}')));
+                }).catch((err) => console.log(err));
+
+            clock = setInterval(function () {
+                fetch("api/stats")
                     .then(response => response.json())
                     .then(response => {
-                        this.updateValues(response);
                         store.commit('pushStats', response);
                         localStorage.stats = JSON.stringify(store.getters.data.stats);
-                        return response;
-                    });
-                // let date = new Date();
-                // num += Math.floor(Math.random() * 1000000);
-                // let dstring = date.getFullYear() + "-" + date.getMonth() + "-" + date.getDate() + "T" + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + "." + date.getMilliseconds() + "Z";
-                // let response = "{\"" + dstring + "\": {\"requests_served\": " +
-                //     Math.floor(Math.random() * 10) + ",\"cache_hits\": " +
-                //     Math.floor(Math.random() * 10) + ",\"cache_misses\": " +
-                //     Math.floor(Math.random() * 10) + ",\"browser_cached\": " +
-                //     Math.floor(Math.random() * 10) + ",\"bytes_sent\": " +
-                //     Math.floor(Math.random() * 100) + ",\"bytes_on_disk\":" +
-                //     num + "}}"
-                // let par = JSON.parse(response);
-                // store.commit('pushStats', par);
-                // localStorage.stats = JSON.stringify(store.getters.data.stats);
-                // return par;
+                    }).catch((err) => {
+                    console.log(err);
+                    return false;
+                });
+            }, isNaN(store.getters.data.updateInterval) ? 500 : Math.max(store.getters.data.updateInterval, 500))
+        },
+        computed: {
+            refresh() {
+                return store.getters.data.updateInterval;
             }
-            setInterval(function () {
-                Event.$emit('update', get());
-            }, 2000)
-            Event.$on('pull', function (){
-                Event.$emit('update', get())
-            })
+        },
+        watch: {
+            refresh() {
+                clearInterval(clock);
+                clock = setInterval(function () {
+                    fetch("api/stats")
+                        .then(response => response.json())
+                        .then(response => {
+                            store.commit('pushStats', response);
+                            localStorage.stats = JSON.stringify(store.getters.data.stats);
+                        }).catch((err) => {
+                        console.log(err);
+                        return false;
+                    });
+                }, isNaN(store.getters.data.updateInterval) ? 500 : Math.max(store.getters.data.updateInterval, 500))
+            }
         }
-    };
+    }
+
 </script>
 <style>
-    ::-webkit-scrollbar {
-        width: 0;
-    }
 </style>

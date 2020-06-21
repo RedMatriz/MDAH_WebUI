@@ -3,6 +3,8 @@ import App from './App'
 import vuetify from './plugins/vuetify';
 import router from './plugins/vuerouter';
 import store from './store';
+import grid from './plugins/vue-grid-layout';
+import echarts from './plugins/echarts';
 import './registerServiceWorker'
 
 Vue.config.productionTip = false
@@ -13,5 +15,7 @@ new Vue({
     render: h => h(App),
     router,
     store,
-    vuetify
+    vuetify,
+    grid,
+    echarts
 }).$mount('#app')
