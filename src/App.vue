@@ -91,86 +91,31 @@
 <script>
     import store from "@/store";
 
-    if (localStorage.hasbg)
-        store.commit('setHasBg', localStorage.hasbg === 'true')
-    if (localStorage.showBar)
-        store.commit('showAppBar', localStorage.showBar === 'true')
-    if (localStorage.theme)
-        store.commit('setTheme', localStorage.theme);
-    if (localStorage.bgURL)
-        store.commit('setBgUrl', localStorage.bgURL)
-    if (localStorage.layout)
-        try {
-            store.commit('setLayout', JSON.parse(localStorage.layout));
-        } catch (e) {
-            store.commit('resetLayout');
-            console.log(e)
-            console.log('using default layout')
-        }
-    if (localStorage.refresh)
-        store.commit('setRefresh', parseInt(localStorage.refresh))
-    document.body.style.backgroundColor = store.getters.current.backgroundColor;
-    if (localStorage.stats && store.getters.data.stats.length < 1)
-        store.commit('setStats', JSON.parse(localStorage.stats))
     let clock;
     export default {
         name: 'App',
+        timers: {},
         data() {
             return {
                 drawer: null,
-                settings: 'settings',
-                showbar: true,
                 items: [
                     {title: 'Dashboard', icon: 'mdi-view-dashboard', route: '/'},
-                    // {title: 'Console', icon: 'mdi-console', route: '/cons'},
+                    {title: 'Console', icon: 'mdi-console', route: '/cons'},
                     {title: 'Settings', icon: 'mdi-cog-outline', route: '/opts'},
-                    // {title: 'Client Info', icon: 'mdi-information-outline', route: '/info'},
+                    {title: 'Client Info', icon: 'mdi-information-outline', route: '/info'},
                 ],
-                evnt: Event,
             }
-        }, mounted() {
-            if (store.getters.data.stats.length >= 1) {
-                for (let i = 0; i < store.getters.data.stats.length; i++) {
-                    let key = Object.keys(store.getters.data.stats[i])[0]
-                    let inst = store.getters.data.stats[i][key];
-                    let hist = i > 0 ? store.getters.data.stats[i - 1][Object.keys(store.getters.data.stats[i - 1])[0]] : null;
-                    let time = new Date(key);
-                    store.commit('pushHits', inst.cache_hits);
-                    store.commit('pushMisses', inst.cache_misses);
-                    store.commit('pushCached', inst.browser_cached);
-                    store.commit('pushDate', time)
-                    store.commit('pushBytesSent', [time, inst.bytes_sent]);
-                    store.commit('pushBytesSentChange', [time, hist ? inst.bytes_sent - hist.bytes_sent : 0]);
-                    store.commit('pushReqServ', [time, inst.requests_served]);
-                    store.commit('pushReqServChange', [time, hist ? inst.requests_served - hist.requests_served : 0]);
-                    store.commit('pushSizeDisk', [time, inst.bytes_on_disk]);
-                    store.commit('pushSizeDiskChange', [time, hist ? inst.bytes_on_disk - hist.bytes_on_disk : 0]);
-                }
-                let stats = store.getters.data.stats;
-                if (stats.length >= 1)
-                    for (let i = 1; i < stats.length; i++) {
-                        if (Object.keys(stats[i])[0] === Object.keys(stats[i - 1])[0]) {
-                            store.commit('spliceStats', [i, 1]);
-                            i--
-                        }
-                    }
-            }
+        },
+        mounted() {
             fetch("api/pastStats")
                 .then(response => response.json())
                 .then(response => {
                     response.forEach((k) => store.commit('pushStats', JSON.parse('{' + k + ': ' + JSON.stringify(response[k]) + '}')));
                 }).catch((err) => console.log(err));
-
-            clock = setInterval(function () {
-                fetch("api/stats")
-                    .then(response => response.json())
-                    .then(response => {
-                        store.commit('pushStats', response);
-                        localStorage.stats = JSON.stringify(store.getters.data.stats);
-                    }).catch((err) => {
-                    console.log(err);
-                    return false;
-                });
+            this.sortData();
+            this.loadData();
+            clock = setInterval(() => {
+                this.updateData();
             }, isNaN(store.getters.data.updateInterval) ? 500 : Math.max(store.getters.data.updateInterval, 500))
         },
         computed: {
@@ -181,21 +126,12 @@
         watch: {
             refresh() {
                 clearInterval(clock);
-                clock = setInterval(function () {
-                    fetch("api/stats")
-                        .then(response => response.json())
-                        .then(response => {
-                            store.commit('pushStats', response);
-                            localStorage.stats = JSON.stringify(store.getters.data.stats);
-                        }).catch((err) => {
-                        console.log(err);
-                        return false;
-                    });
+                clock = setInterval(() => {
+                    this.updateData();
                 }, isNaN(store.getters.data.updateInterval) ? 500 : Math.max(store.getters.data.updateInterval, 500))
             }
         }
     }
-
 </script>
 <style>
 </style>

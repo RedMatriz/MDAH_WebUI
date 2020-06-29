@@ -55,7 +55,6 @@ const state = {
     },
     data: {
         updateInterval: 2000,
-
         stats: [],
         date: [],
         bytesSent: [],
@@ -71,19 +70,14 @@ const state = {
     },
     layout: {
         grid: [
-            {x: 0, y: 0, w: 3, h: 8, i: 0},
-            {x: 3, y: 0, w: 9, h: 8, i: 1},
-            {x: 0, y: 8, w: 6, h: 8, i: 2},
-            {x: 6, y: 8, w: 6, h: 8, i: 3}],
+            {x: 0, y: 0, w: 3, h: 8, i: 0, o: {}},
+            {x: 3, y: 0, w: 9, h: 8, i: 1, o: {}},
+            {x: 0, y: 8, w: 6, h: 8, i: 2, o: {}},
+            {x: 6, y: 8, w: 6, h: 8, i: 3, o: {}}],
+        tempoptions: {title: {text: 'title'}},
+        temppieoptions: {},
     }
 };
-
-const defaultLayout = [
-    {x: 0, y: 0, w: 3, h: 8, i: 0},
-    {x: 3, y: 0, w: 9, h: 8, i: 1},
-    {x: 0, y: 8, w: 6, h: 8, i: 2},
-    {x: 6, y: 8, w: 6, h: 8, i: 3}];
-
 
 const getters = {
     current: state => state.themes[state.current],
@@ -96,6 +90,12 @@ const getters = {
     data: state => state.data,
     layout: state => state.layout,
 };
+
+const defaultLayout = [
+    {x: 0, y: 0, w: 3, h: 8, i: 0},
+    {x: 3, y: 0, w: 9, h: 8, i: 1},
+    {x: 0, y: 8, w: 6, h: 8, i: 2},
+    {x: 6, y: 8, w: 6, h: 8, i: 3}];
 
 const mutations = {
     setTheme(state, theme) {
@@ -207,11 +207,14 @@ const mutations = {
     setRefresh(state, val) {
         state.data.updateInterval = val;
     },
+    setTempOptions(state, val) {
+        state.layout.tempoptions = val;
+    },
+    setTempDatasets(state, val) {
+        state.layout.tempoptions.series = val;
+    },
     showAppBar(state, val) {
         state.showAppBar = val;
-    },
-    setMaxPoints(state, val) {
-        state.data.maxPoints = val;
     },
     setMaxStorePoints(state, val) {
         state.data.maxStorePoints = val;

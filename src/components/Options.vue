@@ -138,73 +138,36 @@
                     </v-row>
                 </v-container>
             </v-col>
-            <v-col cols="12" md="6">
+            <v-col cols="12" md="6" class="hidden-md-and-down">
                 <v-container fluid :style="{backgroundColor: $store.getters.current.secondary + $store.getters.alpha}"
-                             class="pa-5 pb-9">
+                             class="pa-5">
                     <h3>Client Settings</h3>
                     <div style="width: 100%; height: 1px;" :style="{backgroundColor: $store.getters.current.accent2}"
                          class="mt-2 mb-2"/>
                     <v-row>
                         <v-col cols="4" class="pt-0 pb-0" v-if="!$vuetify.breakpoint.mdAndDown">
-                            <v-subheader :style="{color: $store.getters.current.textColor}" class="pt-5">Max Cache Size
+                            <v-subheader :style="{color: $store.getters.current.textColor}" class="pt-5">Client Secret
                             </v-subheader>
                         </v-col>
-                        <v-col cols="8" md="6" class="pt-0 pb-0">
+                        <v-col cols="12" md="8" class="pt-0 pb-0">
                             <v-text-field
-                                    :label="$vuetify.breakpoint.mdAndDown ? 'Max Cache Size' : ''"
-                                    :dark="$store.getters.current.isDark"
-                            />
-                        </v-col>
-                        <v-col cols="4" md="2" class="pt-0 pb-0">
-                            <v-select
-                                    :items="bytes"
-                                    item-text="disp"
-                                    item-value="val"
-                                    :value="1"
+                                    v-model="configvals[0]"
+                                    :error-messages="configerrors[0]"
+                                    :label="$vuetify.breakpoint.mdAndDown ? 'Client Secret' : ''"
                                     :dark="$store.getters.current.isDark"
                             />
                         </v-col>
                     </v-row>
                     <v-row>
                         <v-col cols="4" class="pt-0 pb-0" v-if="!$vuetify.breakpoint.mdAndDown">
-                            <v-subheader :style="{color: $store.getters.current.textColor}" class="pt-5">Max Bits Per
-                                Hour
+                            <v-subheader :style="{color: $store.getters.current.textColor}" class="pt-5">Client Host IP
                             </v-subheader>
                         </v-col>
-                        <v-col cols="8" md="6" class="pt-0 pb-0">
+                        <v-col cols="12" md="8" class="pt-0 pb-0">
                             <v-text-field
-                                    :label="$vuetify.breakpoint.mdAndDown ? 'Max Bits Per Hour' : ''"
-                                    :dark="$store.getters.current.isDark"
-                            />
-                        </v-col>
-                        <v-col cols="4" md="2" class="pt-0 pb-0">
-                            <v-select
-                                    :items="bits"
-                                    item-text="disp"
-                                    item-value="val"
-                                    :value="1"
-                                    :dark="$store.getters.current.isDark"
-                            />
-                        </v-col>
-                    </v-row>
-                    <v-row>
-                        <v-col cols="4" class="pt-0 pb-0" v-if="!$vuetify.breakpoint.mdAndDown">
-                            <v-subheader :style="{color: $store.getters.current.textColor}" class="pt-5">Max Bits Per
-                                Second
-                            </v-subheader>
-                        </v-col>
-                        <v-col cols="8" md="6" class="pt-0 pb-0">
-                            <v-text-field
-                                    :label="$vuetify.breakpoint.mdAndDown ? 'Max Bits Per Second' : ''"
-                                    :dark="$store.getters.current.isDark"
-                            />
-                        </v-col>
-                        <v-col cols="4" md="2" class="pt-0 pb-0">
-                            <v-select
-                                    :items="bits"
-                                    item-text="disp"
-                                    item-value="val"
-                                    :value="1"
+                                    v-model="configvals[1]"
+                                    :error-messages="configerrors[1]"
+                                    :label="$vuetify.breakpoint.mdAndDown ? 'Client Host IP' : ''"
                                     :dark="$store.getters.current.isDark"
                             />
                         </v-col>
@@ -216,9 +179,29 @@
                         </v-col>
                         <v-col cols="12" md="8" class="pt-0 pb-0">
                             <v-text-field
+                                    v-model="configvals[2]"
+                                    :error-messages="configerrors[2]"
                                     :label="$vuetify.breakpoint.mdAndDown ? 'Client Port' : ''"
                                     :dark="$store.getters.current.isDark"
                             />
+                        </v-col>
+                    </v-row>
+                    <v-row>
+                        <v-col cols="4" class="pt-0 pb-0" v-if="!$vuetify.breakpoint.mdAndDown">
+                            <v-subheader :style="{color: $store.getters.current.textColor}" class="pt-5">Max Shutdown
+                                Wait Time
+                            </v-subheader>
+                        </v-col>
+                        <v-col cols="12" md="6" class="pt-0 pb-0">
+                            <v-text-field
+                                    v-model="msw"
+                                    :error-messages="configerrors[3]"
+                                    :label="$vuetify.breakpoint.mdAndDown ? 'Max Shutdown Wait Time' : ''"
+                                    :dark="$store.getters.current.isDark"
+                            />
+                        </v-col>
+                        <v-col cols="4" md="2" class="pt-6 pb-0">
+                            <span>{{mswtprev}}</span>
                         </v-col>
                     </v-row>
                     <v-row>
@@ -228,22 +211,86 @@
                         </v-col>
                         <v-col cols="12" md="8" class="pt-0 pb-0">
                             <v-text-field
+                                    v-model="configvals[3]"
+                                    :error-messages="configerrors[4]"
                                     :label="$vuetify.breakpoint.mdAndDown ? 'Max Threads' : ''"
                                     :dark="$store.getters.current.isDark"
                             />
                         </v-col>
                     </v-row>
+                    <v-row>
+                        <v-col cols="4" class="pt-0 pb-0" v-if="!$vuetify.breakpoint.mdAndDown">
+                            <v-subheader :style="{color: $store.getters.current.textColor}" class="pt-5">Max Cache Size
+                            </v-subheader>
+                        </v-col>
+                        <v-col cols="8" md="6" class="pt-0 pb-0">
+                            <v-text-field
+                                    v-model="mcs"
+                                    :error-messages="configerrors[5]"
+                                    :label="$vuetify.breakpoint.mdAndDown ? 'Max Cache Size' : ''"
+                                    :dark="$store.getters.current.isDark"
+                            />
+                        </v-col>
+                        <v-col cols="4" md="2" class="pt-6 pb-0">
+                            <span>{{mcsprev}}</span>
+                        </v-col>
+                    </v-row>
+                    <v-row>
+                        <v-col cols="4" class="pt-0 pb-0" v-if="!$vuetify.breakpoint.mdAndDown">
+                            <v-subheader :style="{color: $store.getters.current.textColor}" class="pt-5">Max Hourly
+                                Bandwith
+                            </v-subheader>
+                        </v-col>
+                        <v-col cols="8" md="6" class="pt-0 pb-0">
+                            <v-text-field
+                                    v-model="mhb"
+                                    :error-messages="configerrors[6]"
+                                    :label="$vuetify.breakpoint.mdAndDown ? 'Max Hourly Bandwith' : ''"
+                                    :dark="$store.getters.current.isDark"
+                            />
+                        </v-col>
+                        <v-col cols="4" md="2" class="pt-6 pb-0">
+                            <span>{{mhbprev}}</span>
+                        </v-col>
+                    </v-row>
+                    <v-row>
+                        <v-col cols="4" class="pt-0 pb-0" v-if="!$vuetify.breakpoint.mdAndDown">
+                            <v-subheader :style="{color: $store.getters.current.textColor}" class="pt-5">Max Burst Speed
+                            </v-subheader>
+                        </v-col>
+                        <v-col cols="8" md="6" class="pt-0 pb-0">
+                            <v-text-field
+                                    v-model="mbs"
+                                    :error-messages="configerrors[7]"
+                                    :label="$vuetify.breakpoint.mdAndDown ? 'Max Burst Speed' : ''"
+                                    :dark="$store.getters.current.isDark"
+                            />
+                        </v-col>
+                        <v-col cols="4" md="2" class="pt-6 pb-0">
+                            <span>{{mbsprev}}</span>
+                        </v-col>
+                    </v-row>
+                    <v-container fluid
+                                 :style="{backgroundColor: $store.getters.current.secondary + $store.getters.alpha}">
+                        <h3>Config Result</h3>
+                        <v-container fluid
+                                     :style="{backgroundColor: $store.getters.current.accent1 + $store.getters.alpha}">
+                            <span style="font-family: monospace">
+                                {<br>
+                                 "client_secret": "{{configvals[0]}}",<br>
+                                 "client_hostname": "{{configvals[1]}}",<br>
+                                 "client_port": "{{configvals[2]}}",<br>
+                                 "threads": "{{configvals[3]}}",<br>
+                                 "graceful_shutdown_wait_seconds": "{{configvals[4]}}",<br>
+                                 "max_cache_size_in_mebibytes": "{{configvals[5]}}",<br>
+                                 "max_kilobits_per_second": "{{configvals[6]}}",<br>
+                                 "max_mebibytes_per_hour": "{{configvals[7]}}",<br>
+                                }
+                            </span>
+                        </v-container>
+                    </v-container>
                 </v-container>
             </v-col>
-            <!--            <v-row>-->
-            <!--                <v-col cols="4">-->
-            <!--                    <v-subheader :style="{color: $store.getters.current.textColor}"-->
-            <!--                                 class="pt-5"></v-subheader>-->
-            <!--                </v-col>-->
-            <!--                <v-col cols="8">-->
-
-            <!--                </v-col>-->
-            <!--            </v-row>-->
         </v-row>
     </v-container>
 </template>
@@ -285,62 +332,16 @@
                     disp: 'Midnight',
                     val: 'midnight'
                 }],
-                bytes: [{
-                    disp: 'Bytes',
-                    val: 1
-                }, {
-                    disp: 'Kilobytes',
-                    val: 1000
-                }, {
-                    disp: 'Megabytes',
-                    val: 1000000
-                }, {
-                    disp: 'Gigabytes',
-                    val: 1000000000
-                }, {
-                    disp: 'Terabytes',
-                    val: 1000000000000
-                }, {
-                    disp: 'Petabytes',
-                    val: 1000000000000000
-                }, {
-                    disp: 'Exabytes',
-                    val: 1000000000000000000
-                }, {
-                    disp: 'Zettabytes',
-                    val: 1000000000000000000000
-                }, {
-                    disp: 'Yottabytes',
-                    val: 1000000000000000000000000
-                }],
-                bits: [{
-                    disp: 'Bits',
-                    val: 1
-                }, {
-                    disp: 'Kilobits',
-                    val: 1000
-                }, {
-                    disp: 'Megabits',
-                    val: 1000000
-                }, {
-                    disp: 'Gigabits',
-                    val: 1000000000
-                }, {
-                    disp: 'Terabits',
-                    val: 1000000000000
-                }, {
-                    disp: 'Petabits',
-                    val: 1000000000000000
-                }, {
-                    disp: 'Exabits',
-                    val: 1000000000000000000
-                }, {
-                    disp: 'Zettabits',
-                    val: 1000000000000000000000
-                }, {
-                    disp: 'Yottabits',
-                    val: 1000000000000000000000000
-                }],
+                mcsprev: '1.049 mb',
+                mcs: 1048576,
+                mhbprev: '1.049 mb',
+                mhb: 1048576,
+                mbsprev: '1 kps',
+                mbs: 1000,
+                mswtprev: '1 m',
+                msw: 60,
+                configvals: ['iiesenpaithisisoursecret', '0.0.0.0', 44300, 16, 60, 1, 1, 1],
+                configerrors: ['', '', '', '', '', '', '', ''],
                 hasBgImage: store.getters.hasBgImage,
                 bgimg: store.getters.bgImg,
                 referr: '',
@@ -356,7 +357,23 @@
             },
             showAppBar() {
                 return store.getters.showAppBar
+            },
+            maxbs() {
+                return this.mbs
+            },
+            maxhb() {
+                return this.mhb
+            },
+            maxcs() {
+                return this.mcs
+            },
+            maxsw() {
+                return this.msw
+            },
+            configval(){
+                return this.configvals
             }
+
         },
         watch: {
             hasbg() {
@@ -369,9 +386,166 @@
             },
             showAppBar() {
                 localStorage.showBar = store.getters.showAppBar
+            },
+            maxbs() {
+                if (this.mbs === '') {
+                    this.mbsprev = '0 bits/s';
+                    return;
+                }
+                let unit = ['bps', 'kbps', 'mbps', 'gbps', 'tbps', 'pbps', 'ebps', 'zbps', 'ybps'];
+                if (isNaN(this.mbs)) {
+                    for (let i in unit) {
+                        if (this.mbs.indexOf(unit[i]) !== -1) {
+                            let val = parseFloat(this.mbs.replace(unit[i], ''));
+                            for (let j in unit) {
+                                let divisor = Math.pow(10, parseInt(j) * 3)
+                                if (val * Math.pow(10, parseInt(i) * 3) >= divisor)
+                                    this.mbsprev = (val * Math.pow(10, parseInt(i) * 3) / divisor).toPrecision(4) + ' ' + unit[j]
+                            }
+                            this.configvals[6] = val * Math.pow(10, parseInt(i) * 3) / 1000;
+                        }
+                    }
+                } else {
+                    let bits = parseInt(this.mbs);
+                    for (let i in unit) {
+                        let divisor = Math.pow(10, parseInt(i) * 3)
+                        if (bits >= divisor)
+                            this.mbsprev = (bits / divisor).toPrecision(4) + ' ' + unit[i]
+                    }
+                    this.configvals[6] = Math.round(bits / 1000);
+                }
+                if (this.configvals[6] <  1) {
+                    this.configerrors[7] = 'That size is too small!';
+                } else
+                    this.configerrors[7] = ''
+            },
+            maxhb() {
+                if (this.mcs === '') {
+                    this.configvals[7] = 0;
+                    this.mcsprev = '0 bytes';
+                    return;
+                }
+                let unit = ['b', 'kb', 'mb', 'gb', 'tb', 'pb', 'eb', 'zb', 'yb'];
+                if (isNaN(this.mhb)) {
+                    for (let i in unit) {
+                        if (this.mhb.indexOf(unit[i]) !== -1) {
+                            let val = parseFloat(this.mhb.replace(unit[i], ''));
+                            for (let j in unit) {
+                                let divisor = Math.pow(10, parseInt(j) * 3)
+                                if (val * Math.pow(10, parseInt(i) * 3) >= divisor)
+                                    this.mhbprev = (val * Math.pow(10, parseInt(i) * 3) / divisor).toPrecision(4) + ' ' + unit[j]
+                            }
+                            this.configvals[7] = Math.round(val * Math.pow(10, parseInt(i) * 3) / 1048576);
+                        }
+                    }
+                } else {
+                    let bytes = parseInt(this.mhb);
+                    if (bytes === 0) {
+                        this.mhbprev = '0 bytes';
+                        return;
+                    }
+                    for (let i in unit) {
+                        let divisor = Math.pow(10, parseInt(i) * 3)
+                        if (bytes >= divisor)
+                            this.mhbprev = (bytes / divisor).toPrecision(4) + ' ' + unit[i]
+                    }
+                    this.configvals[7] = Math.round(bytes / 1048576);
+                }
+                if (this.configvals[7] < 1) {
+                    this.configerrors[6] = 'That size is too small!';
+                } else
+                    this.configerrors[6] = ''
+            },
+            maxcs() {
+                if (this.mcs === '') {
+                    this.configvals[5] = 0;
+                    this.mcsprev = '0 bytes';
+                    return;
+                }
+                let unit = ['b', 'kb', 'mb', 'gb', 'tb', 'pb', 'eb', 'zb', 'yb'];
+                if (isNaN(this.mcs)) {
+                    for (let i in unit) {
+                        if (this.mcs.indexOf(unit[i]) !== -1) {
+                            let val = parseFloat(this.mcs.replace(unit[i], ''));
+                            for (let j in unit) {
+                                let divisor = Math.pow(10, parseInt(j) * 3)
+                                if (val * Math.pow(10, parseInt(i) * 3) >= divisor)
+                                    this.mcsprev = (val * Math.pow(10, parseInt(i) * 3) / divisor).toPrecision(4) + ' ' + unit[j]
+                            }
+                            this.configvals[5] = Math.round(val * Math.pow(10, parseInt(i) * 3) / 1048576);
+                        }
+                    }
+                } else {
+                    let bytes = parseInt(this.mcs);
+                    for (let i in unit) {
+                        let divisor = Math.pow(10, parseInt(i) * 3)
+                        if (bytes >= divisor)
+                            this.mcsprev = (bytes / divisor).toPrecision(4) + ' ' + unit[i]
+                    }
+                    this.configvals[5] = Math.round(bytes / 1048576);
+                }
+                if (this.configvals[5] < 1) {
+                    this.configerrors[5] = 'That size is too small!';
+                } else
+                    this.configerrors[5] = ''
+            },
+            maxsw() {
+                if (this.msw === '') {
+                    this.configvals[4] = 0;
+                    this.mswtprev = '0 seconds';
+                    return;
+                }
+                let unit = ['s', 'm', 'h', 'd'];
+                let conversion = [1, 60, 3600, 86400]
+                if (isNaN(this.msw)) {
+                    for (let i in unit) {
+                        if (this.msw.indexOf(unit[i]) !== -1) {
+                            let val = parseFloat(this.msw.replace(unit[i], ''));
+                            for (let j in conversion) {
+                                let divisor = conversion[j]
+                                if (val * conversion[i] >= divisor) {
+                                    this.mswtprev = (val * conversion[i] / divisor).toPrecision(4) + ' ' + unit[j]
+                                }
+                            }
+                            this.configvals[4] = Math.round(val * conversion[i]);
+                        }
+                    }
+                } else {
+                    let time = parseInt(this.msw);
+                    for (let i in conversion) {
+                        let divisor = conversion[i]
+                        if (time >= divisor) {
+                            this.mswtprev = (time / divisor).toPrecision(4) + ' ' + unit[i]
+                        }
+                    }
+                    this.configvals[4] = Math.round(time);
+                }
+            },
+            configval() {
+                if (this.configval[0].indexOf(' ') !== -1){
+                    this.configerrors[0] = 'Secret can\'t have spaces!'
+                }else{
+                    this.configerrors[0] = ''
+                }
+                if (this.configval[1].indexOf(' ') !== -1){
+                    this.configerrors[1] = 'IP can\'t have spaces!'
+                }else{
+                    this.configerrors[1] = ''
+                }
+                if (isNaN(this.configval[2])){
+                    this.configerrors[2] = 'Port can\'t have spaces!'
+                }else{
+                    this.configerrors[2] = ''
+                }
+                if (this.configval[3] < 4){
+                    this.configerrors[4] = 'Max threads can\'t be less than 4!'
+                }else if (isNaN(this.configval[3]))
+                    this.configerrors[4] = 'Max threads should be a number!'
+                else{
+                    this.configerrors[4] = ''
+                }
             }
         }
-
     }
 </script>
 

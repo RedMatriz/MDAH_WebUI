@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
@@ -8,15 +8,28 @@
     <title>MD@H Client</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@latest/css/materialdesignicons.min.css">
-    <script src="vue-grid-layout.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@4.1.0/dist/echarts.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue-echarts@4.0.2"></script>
-  </head>
-  <body>
-    <noscript>
-      <strong>It would appear the javascript isn't enabled</strong>
-    </noscript>
-    <div id="app"></div>
-    <!-- built files will be auto injected -->
-  </body>
+    <script src="https://unpkg.com/xterm@4.0.0/lib/xterm.js"></script>
+    <link rel="stylesheet" href="node_modules/xterm/css/xterm.css" />
+</head>
+<body>
+<noscript>
+    <div style="background-color: #0980e8; position: absolute; top: 0; left: 0; width: 100%; height: 100%; user-select: none">
+        <div style="position: absolute; top: 15%; left: 20%; width: 60%; font-family: Segoe UI;  color: white;">
+            <p style=" font-size: 180px; margin: 0">
+                :(</p>
+            <p style="font-size: 30px; margin-top: 50px">
+                It appears that you don't have javascript enabled.<br>
+                This isn't a big deal, but it just means that you've killed my wonderful web UI.<br>
+                How evil of you...</p>
+            <p style="font-size: 10px; margin-top: 10px">
+                Really though ;-; <br>
+                I put in a lot of work and I'm very sad that you choose to disable the one thing that I needed :/
+            </p>
+        </div>
+    </div>
+</noscript>
+<div id="app"></div>
+</body>
 </html>
