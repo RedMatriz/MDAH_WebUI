@@ -27,6 +27,8 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 
 ### Dashboard
 
+- [ ] Graph Creation
+
 - #### Data
 
  - [x] Hits
@@ -45,14 +47,14 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
  - [ ] scroll-less stats
  - [ ] toggle for graphs numbers
  - [x] Change over time and totals for stats
- - [ ] Unit scaling
- - [ ] Data caching
+ - [x] Unit scaling
+ - [x] Data caching
  - [ ] all time stats
 
 ### Console
 
  - [ ] Client control buttons
- - [ ] Live console (read only or with imput)
+ - [ ] Live console (read only or with input)
  - [ ] Latest console line
 
 ### Options
@@ -66,3 +68,4 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 ### Other
  - [ ] Multiple client support
  - [ ] Notifications for lower than normal performance
+ - [ ] Non-browser stat and settings storage
