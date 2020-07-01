@@ -6,32 +6,25 @@
                 <v-col>
                     <h1 class="pl-1">Dashboard</h1>
                 </v-col>
-                <v-spacer/>
-                <v-spacer/>
-                <v-spacer/>
-                <v-spacer/>
-                <v-spacer/>
-                <v-spacer/>
-                <v-spacer/>
-                <v-spacer/>
-                <v-spacer/>
-                <v-spacer v-if="!$vuetify.breakpoint.mdAndDown"/>
                 <v-col>
                     <v-btn
-                            class="mt-1"
                             v-if="!$vuetify.breakpoint.mdAndDown"
                             :style="{color: $store.getters.current.textColor}"
+                            style="position: absolute; right: 0;margin-right: 28px; margin-top: 5px"
                             :color="$store.getters.current.accent1"
+                            tile
                             @click="showModal"
                     >
                         <v-icon left>mdi-plus</v-icon>
                         Add Graph
                     </v-btn>
                     <v-btn
-                            class="mt-2 pa-0"
                             v-if="$vuetify.breakpoint.mdAndDown"
                             :style="{color: $store.getters.current.textColor}"
+                            style="position: absolute; right: 0;margin-right: 28px; margin-top: 5px"
                             :color="$store.getters.current.accent1"
+                            tile
+                            @click="showModal"
                     >
                         <v-icon>mdi-plus</v-icon>
                     </v-btn>
@@ -39,10 +32,12 @@
             </v-row>
         </v-container>
         <grid-layout
-                style="width: calc(100% + 20px); left: -10px"
+                v-if="$store.getters.loaded"
+                style="width: calc(100% + 24px); left: -12px"
                 :layout.sync="layout"
                 :col-num="12"
                 :row-height="30"
+                :margin="[12,12]"
                 :is-draggable="true"
                 :is-resizable="true"
                 :vertical-compact="true"
@@ -60,10 +55,11 @@
                        drag-ignore-from=".no-drag"
                        @move="moved"
                        @resize="resized"
+
             >
-                <v-container fluid style="height: 100%;width: 100%; position: absolute" class="no-drag">
-                    <v-chart style="height: 100%;width: 100%" autoresize
-                             :options="item.o"
+                <v-container fluid style="height: 100%;width: 100%; position: absolute" class="no-drag" >
+                    <chart style="height: 100%;width: 100%" autoresize
+                           :options="item.o"
                     />
                 </v-container>
                 <v-icon :style="{position: 'absolute', color: $store.getters.current.accent, left: 'calc(50% - 5px)', width: '10px'}"
@@ -111,9 +107,12 @@
                 </v-container>
             </v-col>
         </v-row>
-        <modal name="createGraph" :styles="{backgroundColor: $store.getters.current.secondary, minHeight: '75%'}"
+        <modal name="createGraph"
+               :styles="{backgroundColor: $store.getters.current.secondary, minHeight: '75%'}"
                width="75%"
-               height="auto" :scrollable="true">
+               height="auto"
+               :scrollable="true"
+        >
             <v-container fluid>
                 <h3>Create Graph</h3>
                 <div style="width: 100%; height: 1px;" :style="{backgroundColor: $store.getters.current.accent2}"
@@ -142,6 +141,7 @@
                             <v-col cols="10" class="pt-4 pl-0">
                                 <v-btn-toggle
                                         mandatory
+                                        tile
                                         :dark="$store.getters.current.isDark"
                                 >
                                     <v-btn v-model="graph"
@@ -165,8 +165,8 @@
                                     <v-btn
                                             small
                                             icon
-                                            :color="$store.getters.current.textColor"
-                                            :style="{backgroundColor: $store.getters.current.accent}"
+                                            :style="{color: $store.getters.current.textColor}"
+                                            :color="$store.getters.current.accent1"
                                             @click="addSet(index)"
                                     >
                                         <v-icon>mdi-plus</v-icon>
@@ -176,8 +176,8 @@
                                             small
                                             icon
                                             v-if="$store.getters.layout.tempoptions.series.length > 1"
-                                            :color="$store.getters.current.textColor"
-                                            :style="{backgroundColor: $store.getters.current.accent}"
+                                            :style="{color: $store.getters.current.textColor}"
+                                            :color="$store.getters.current.accent1"
                                             @click="removeSet(index)"
                                     >
                                         <v-icon>mdi-minus</v-icon>
@@ -249,13 +249,14 @@
                         />
                     </v-col>
                 </v-row>
-                <v-btn absolute :style="{color: $store.getters.current.textColor, right: '10px', bottom: '10px'}"
+                <v-btn absolute tile
+                       :style="{color: $store.getters.current.textColor, right: '12px', bottom: '12px'}"
                        :color="$store.getters.current.accent1">
                     Add Graph
                 </v-btn>
             </v-container>
         </modal>
-        <v-btn @click="pull">
+        <v-btn @click="this.updateData">
             Add data
         </v-btn>
     </v-container>
@@ -267,6 +268,7 @@
 
     export default {
         name: 'Dashboard',
+        components: {chart: () => import('vue-echarts')},
         data() {
             let tbox = {
                 orient: 'vertical',
@@ -390,6 +392,7 @@
             let dataZoom = [{
                 type: 'inside',
             }, {
+                start: 90,
                 type: 'slider',
                 handleSize: '100%',
                 fillerColor: store.getters.current.accent1,
@@ -420,7 +423,6 @@
             let layout = store.getters.layout.grid;
             return {
                 graph: true,
-                reloadChart: false,
                 graphoptstemplate: {
                     tooltip: {
                         trigger: 'axis',
@@ -588,17 +590,17 @@
                                     },
                                     data: [
                                         {
-                                            value: 0,
+                                            value: store.getters.data.hits[store.getters.data.hits.length - 1] ? store.getters.data.hits[store.getters.data.hits.length - 1][1] : 0,
                                             name: 'Hits',
                                             itemStyle: {color: store.getters.current.green}
                                         },
                                         {
-                                            value: 0,
+                                            value: store.getters.data.misses[store.getters.data.misses.length - 1] ? store.getters.data.misses[store.getters.data.misses.length - 1][1] : 0,
                                             name: 'Misses',
                                             itemStyle: {color: store.getters.current.red}
                                         },
                                         {
-                                            value: 0,
+                                            value: store.getters.data.cached[store.getters.data.cached.length - 1] ? store.getters.data.cached[store.getters.data.cached.length - 1][1] : 0,
                                             name: 'Cached',
                                             itemStyle: {color: store.getters.current.accent}
                                         },
@@ -764,7 +766,6 @@
                     }
                 ],
                 graphTypes: [{name: 'Line', val: 'line'}, {name: 'Bar', val: 'bar'}],
-
             }
         },
         methods: {
@@ -774,50 +775,6 @@
                         this.layout.splice(i, 1)
                     }
                 }
-            },
-            updateValues() {
-                let stats = store.getters.data.stats;
-                if (stats.length < 1)
-                    return;
-                let key = Object.keys(stats[stats.length - 1])[0]
-                let inst = stats[stats.length - 1][key];
-                let hist = stats.length > 2 ? stats[stats.length - 2][Object.keys(stats[stats.length - 2])[0]] : null;
-                let time = new Date(key.replace('T', ' ').replace('Z', ' '));
-                this.layout[0].o.series[0].data[0].value = inst.cache_hits;
-                this.layout[0].o.series[0].data[1].value = inst.cache_misses;
-                this.layout[0].o.series[0].data[2].value = inst.browser_cached;
-                store.commit('pushHits', [time, inst.cache_hits]);
-                store.commit('pushMisses', [time, inst.cache_misses]);
-                store.commit('pushCached', [time, inst.browser_cached]);
-                store.commit('pushDate', time);
-                store.commit('pushBytesSent', [time, inst.bytes_sent]);
-                store.commit('pushBytesSentChange', [time, hist ? inst.bytes_sent - hist.bytes_sent : 0]);
-                store.commit('pushReqServ', [time, inst.requests_served]);
-                store.commit('pushReqServChange', [time, hist ? inst.requests_served - hist.requests_served : 0]);
-                store.commit('pushSizeDisk', [time, inst.bytes_on_disk]);
-                store.commit('pushSizeDiskChange', [time, hist ? inst.bytes_on_disk - hist.bytes_on_disk : 0]);
-            },
-            pull() {
-                // fetch("api/stats")
-                //     .then(response => response.json())
-                //     .then(response => {
-                //         store.commit('pushStats', response);
-                //         localStorage.stats = JSON.stringify(store.getters.data.stats);
-                //     }).catch((err) => {
-                //     console.log(err);
-                // });
-                let date = new Date();
-                let response = "{\"" + date.toISOString() + "\": {\"requests_served\": " +
-                    Math.floor(Math.random() * 10) + ",\"cache_hits\": " +
-                    Math.floor(Math.random() * 10) + ",\"cache_misses\": " +
-                    Math.floor(Math.random() * 10) + ",\"browser_cached\": " +
-                    Math.floor(Math.random() * 10) + ",\"bytes_sent\": " +
-                    Math.floor(Math.random() * 100) + ",\"bytes_on_disk\":" +
-                    Math.floor(Math.random() * 100) + "}}"
-                let par = JSON.parse(response);
-                store.commit('pushStats', par);
-                // localStorage.stats = JSON.stringify(store.getters.data.stats);
-                // console.log(date.toISOString())
             },
             showModal() {
                 this.uniqindex = 0;
@@ -859,19 +816,21 @@
             }
         },
         computed: {
-            stats() {
-                return store.getters.data.stats
-            },
             layouts() {
                 return this.layout;
+            },
+            hitmiscach(){
+                return store.getters.data.date
             }
         },
         watch: {
-            stats() {
-                this.updateValues()
-            },
             layouts() {
                 console.log(this.layout)
+            },
+            hitmiscach(){
+                this.layout[0].o.series[0].data[0].value = store.getters.data.hits[store.getters.data.hits.length - 1][1];
+                this.layout[0].o.series[0].data[1].value = store.getters.data.misses[store.getters.data.misses.length - 1][1];
+                this.layout[0].o.series[0].data[2].value = store.getters.data.cached[store.getters.data.cached.length - 1][1];
             }
         }
     }

@@ -29,17 +29,13 @@
         },
         mounted() {
             this.term.open(document.getElementById(this.genid))
-            window.addEventListener('resize', () =>{
-                this.fit()
-            })
+            window.addEventListener('resize', this.fit)
             this.fit()
             this.runFakeTerminal()
         },
         beforeDestroy () {
             this.term.dispose()
-            window.removeEventListener('resize',() =>{
-                this.fit()
-            })
+            window.removeEventListener('resize', this.fit)
         },
         methods: {
             fit() {
@@ -54,9 +50,10 @@
                     return;
                 }
                 this.term._initialized = true;
-                this.term.writeln('Welcome to the Web UI');
-                this.term.writeln('You\'re super lazy and didnt bother to actually implement a console sync');
-                this.term.writeln('Go do some more work and stop reading manga');
+                this.term.writeln('Welcome to the Web UI console');
+                this.term.writeln('Anti was super lazy and didnt bother to actually implement a console sync');
+                this.term.writeln('Go ping him (please don\'t) to do some more work and stop reading manga');
+                this.term.writeln('You\'re still free to type and spam in this console to your heart\'s content tho');
                 this.term.writeln('');
                 this.prompt(this.term);
 

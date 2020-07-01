@@ -1,5 +1,6 @@
 module.exports = {
     runtimeCompiler: true,
+    publicPath: './',
     "transpileDependencies": [
         "vuetify",
         'vue-echarts',
@@ -14,7 +15,7 @@ module.exports = {
         appleMobileWebAppStatusBarStyle: 'black',
         manifestOptions: {
             short_name: 'MD@H',
-            start_url: '/'
+            start_url: ''
         },
         // configure the workbox plugin
         workboxPluginMode: 'InjectManifest',

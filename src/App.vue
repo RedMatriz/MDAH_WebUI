@@ -91,10 +91,12 @@
 <script>
     import store from "@/store";
 
-    let clock;
+    // let clock;
     export default {
         name: 'App',
-        timers: {},
+        timers: {
+            pullData: {time: store.getters.data.updateInterval, autostart: true, repeat: true}
+        },
         data() {
             return {
                 drawer: null,
@@ -106,6 +108,11 @@
                 ],
             }
         },
+        methods: {
+            pullData() {
+                this.updateData();
+            }
+        },
         mounted() {
             fetch("api/pastStats")
                 .then(response => response.json())
@@ -114,9 +121,7 @@
                 }).catch((err) => console.log(err));
             this.sortData();
             this.loadData();
-            clock = setInterval(() => {
-                this.updateData();
-            }, isNaN(store.getters.data.updateInterval) ? 500 : Math.max(store.getters.data.updateInterval, 500))
+            this.$timer.restart('pullData')
         },
         computed: {
             refresh() {
@@ -125,10 +130,8 @@
         },
         watch: {
             refresh() {
-                clearInterval(clock);
-                clock = setInterval(() => {
-                    this.updateData();
-                }, isNaN(store.getters.data.updateInterval) ? 500 : Math.max(store.getters.data.updateInterval, 500))
+                this.timers.pullData.time = store.getters.data.updateInterval
+                this.$timer.restart('pullData')
             }
         }
     }

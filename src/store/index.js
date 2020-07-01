@@ -5,20 +5,22 @@ Vue.use(Vuex);
 
 
 const state = {
-    current: 'light',
-    hasBgImage: false,
-    bgImage: 'https://images3.alphacoders.com/819/thumb-1920-819294.png',
-    showAppBar: true,
+    options: {
+        current: 'light',
+        hasBgImage: false,
+        bgImage: 'https://images3.alphacoders.com/819/thumb-1920-819294.png',
+        showAppBar: true,
+    },
     themes: {
         light: {
             backgroundAlpha: 'f0',
-            backgroundColor: '#f0f0f0',
+            backgroundColor: '#efeff0',
             textColor: '#202020',
-            primary: '#fefefe',
-            secondary: '#fdfdfd',
-            accent: '#717171',
-            accent1: 'rgba(150,150,150, 0.3)',
-            accent2: 'rgba(94,94,94,0.7)',
+            primary: '#fbfbfe',
+            secondary: '#fafafa',
+            accent: '#717175',
+            accent1: 'rgba(150,150,158, 0.3)',
+            accent2: 'rgba(94,94,98,0.7)',
             green: '#00e000',
             red: '#e00000',
             yellow: '#e0e000',
@@ -26,13 +28,13 @@ const state = {
         },
         dark: {
             backgroundAlpha: 'f0',
-            backgroundColor: '#353535',
+            backgroundColor: '#353536',
             textColor: '#f0f0f0',
-            primary: '#505050',
-            secondary: '#454545',
-            accent: '#606060',
-            accent1: 'rgba(200,200,200,0.3)',
-            accent2: 'rgba(200,200,200,0.7)',
+            primary: '#505053',
+            secondary: '#454547',
+            accent: '#606065',
+            accent1: 'rgba(200,200,210,0.3)',
+            accent2: 'rgba(200,200,210,0.7)',
             green: '#00e000',
             red: '#e00000',
             yellow: '#e0e000',
@@ -54,8 +56,6 @@ const state = {
         },
     },
     data: {
-        updateInterval: 2000,
-        stats: [],
         date: [],
         bytesSent: [],
         bytesSentChange: [],
@@ -64,10 +64,16 @@ const state = {
         reqServ: [],
         reqServChange: [],
         hits: [],
+        hitsChange: [],
         misses: [],
+        missesChange: [],
         cached: [],
+        cachedChange: [],
+        stats: [],
+        updateInterval: 2000,
         maxStorePoints: 1801,
     },
+    loaded: false,
     layout: {
         grid: [
             {x: 0, y: 0, w: 3, h: 8, i: 0, o: {}},
@@ -80,15 +86,17 @@ const state = {
 };
 
 const getters = {
-    current: state => state.themes[state.current],
-    hasBgImage: state => state.hasBgImage,
-    bgImg: state => state.bgImage,
-    showAppBar: state => state.showAppBar,
+    current: state => state.themes[state.options.current],
+    options: state => state.options,
+    hasBgImage: state => state.options.hasBgImage,
+    bgImg: state => state.options.bgImage,
+    showAppBar: state => state.options.showAppBar,
     alpha: state => {
-        return (state.hasBgImage ? state.themes[state.current].backgroundAlpha : '')
+        return (state.options.hasBgImage ? state.themes[state.options.current].backgroundAlpha : '')
     },
     data: state => state.data,
     layout: state => state.layout,
+    loaded: state => state.loaded
 };
 
 const defaultLayout = [
@@ -99,7 +107,7 @@ const defaultLayout = [
 
 const mutations = {
     setTheme(state, theme) {
-        state.current = theme;
+        state.options.current = theme;
     },
     setStats(state, val) {
         state.data.stats = val;
@@ -158,10 +166,22 @@ const mutations = {
             state.data.hits.splice(0, state.data.hits.length - state.data.maxStorePoints)
         }
     },
+    pushHitsChange(state, val) {
+        state.data.hitsChange.push(val);
+        if (state.data.hitsChange.length > state.data.maxStorePoints) {
+            state.data.hitsChange.splice(0, state.data.hitsChange.length - state.data.maxStorePoints)
+        }
+    },
     pushMisses(state, val) {
         state.data.misses.push(val);
         if (state.data.misses.length > state.data.maxStorePoints) {
             state.data.misses.splice(0, state.data.misses.length - state.data.maxStorePoints)
+        }
+    },
+    pushMissesChange(state, val) {
+        state.data.missesChange.push(val);
+        if (state.data.missesChange.length > state.data.maxStorePoints) {
+            state.data.missesChange.splice(0, state.data.missesChange.length - state.data.maxStorePoints)
         }
     },
     pushCached(state, val) {
@@ -170,15 +190,31 @@ const mutations = {
             state.data.cached.splice(0, state.data.cached.length - state.data.maxStorePoints)
         }
     },
+    pushCachedChange(state, val) {
+        state.data.cachedChange.push(val);
+        if (state.data.cachedChange.length > state.data.maxStorePoints) {
+            state.data.cachedChange.splice(0, state.data.cachedChange.length - state.data.maxStorePoints)
+        }
+    },
     resetStats(state) {
-        state.data.stats = [];
-        state.data.date = [];
-        state.data.sizeDisk = [];
-        state.data.reqServ = [];
-        state.data.bytesSent = [];
-        state.data.hits = [];
-        state.data.misses = [];
-        state.data.cached = [];
+        state.data = {
+            date: [],
+            bytesSent: [],
+            bytesSentChange: [],
+            sizeDisk: [],
+            sizeDiskChange: [],
+            reqServ: [],
+            reqServChange: [],
+            hits: [],
+            hitsChange: [],
+            misses: [],
+            missesChange: [],
+            cached: [],
+            cachedChange: [],
+            stats: [],
+            updateInterval: state.data.updateInterval,
+            maxStorePoints: state.data.maxStorePoints,
+        }
         localStorage.stats = '';
     },
     resetLayout(state) {
@@ -199,10 +235,10 @@ const mutations = {
         store.layout.grid = val;
     },
     setHasBg(state, val) {
-        state.hasBgImage = val;
+        state.options.hasBgImage = val;
     },
     setBgUrl(state, val) {
-        state.bgImage = val;
+        state.options.bgImage = val;
     },
     setRefresh(state, val) {
         state.data.updateInterval = val;
@@ -213,8 +249,11 @@ const mutations = {
     setTempDatasets(state, val) {
         state.layout.tempoptions.series = val;
     },
+    setLoaded(state, val) {
+        state.loaded = val;
+    },
     showAppBar(state, val) {
-        state.showAppBar = val;
+        state.options.showAppBar = val;
     },
     setMaxStorePoints(state, val) {
         state.data.maxStorePoints = val;
