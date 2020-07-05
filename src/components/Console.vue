@@ -17,12 +17,13 @@
                 </v-col>
             </v-row>
         </v-container>
-        <xterm style="width: calc(100% - 24px); bottom: 0; position: absolute" class="mt-3 mb-3"></xterm>
+        <xterm style="width: 100%; " class="mt-3 mb-3"></xterm>
     </v-container>
 </template>
 
 <script>
     import Xterm from "@/components/xterm";
+
 
     export default {
         name: "Console",

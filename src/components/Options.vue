@@ -12,16 +12,17 @@
             <h4>Display</h4>
             <v-row dense>
                 <v-col cols="4" v-if="!$vuetify.breakpoint.mdAndDown" class="pt-0 pb-0">
-                    <v-subheader :style="{color: $store.getters.current.textColor}" class="pt-5">Theme
+                    <v-subheader :style="{color: $store.getters.current.textColor}">Theme
                     </v-subheader>
                 </v-col>
-                <v-col cols="12" md="8" class="pt-0 pb-0">
+                <v-col cols="12" md="8" class="pt-2 pb-0">
                     <v-select
+                            dense
                             :label="$vuetify.breakpoint.mdAndDown ? 'Theme' : ''"
                             :items="items"
                             item-value="val"
                             item-text="disp"
-                            @input="setTheme"
+                            @input="(val) => $store.commit('setTheme', val)"
                             :value="$store.state.options.current"
                             :color="$store.getters.current.textColor"
                             :dark="$store.getters.current.isDark"
@@ -71,19 +72,27 @@
                     />
                 </v-col>
             </v-row>
-            <v-row dense v-if="!$vuetify.breakpoint.mdAndDown">
-                <v-col cols="4" class="pt-0 pb-0">
-                    <v-subheader :style="{color: $store.getters.current.textColor}" class="pt-5">Dashboard
+            <v-row dense>
+                <v-col cols="4" v-if="!$vuetify.breakpoint.mdAndDown" class="pt-0 pb-0">
+                    <v-subheader :style="{color: $store.getters.current.textColor}" class="pt-3">Dashboard
                     </v-subheader>
                 </v-col>
-                <v-col cols="8" class="pt-0 pb-0">
+                <v-col cols="12" md="8" class="pt-2 pb-0">
                         <v-btn
                                 @click="$store.commit('resetLayout')"
                                 :style="{color: $store.getters.current.textColor}"
                                 :color="$store.getters.current.accent1"
+                                v-if="!$vuetify.breakpoint.mdAndDown"
                         >
                             Reset
                         </v-btn>
+                    <v-btn
+                            @click="$store.commit('resetLayout')"
+                           :style="{color: $store.getters.current.textColor}"
+                           :color="$store.getters.current.accent1"
+                           v-if="$vuetify.breakpoint.mdAndDown">
+                        Reset Dashboard
+                    </v-btn>
                 </v-col>
             </v-row>
             <h4 class="mt-3">Data</h4>
@@ -96,21 +105,37 @@
                 <v-col cols="8" class="pt-0 pb-0">
                     <v-text-field
                             :label="$vuetify.breakpoint.mdAndDown? 'Data Refresh Rate': ''"
-                            v-model="$store.getters.data.updateInterval"
+                            v-model="updateInterval"
                             :dark="$store.getters.current.isDark"
-                            :error-messages="referr"
-                            @input="checkNan"
-                            @change="commit"
+                            :error-messages="referr[0]"
+                            @input="(val) => {checkNan(val, 0); $store.commit('setRefresh', val)}"
+                            @focusout="() => this.updateInterval = $store.getters.data.updateInterval"
                             suffix="ms"
                     />
                 </v-col>
             </v-row>
             <v-row dense>
                 <v-col cols="4" v-if="!$vuetify.breakpoint.mdAndDown" class="pt-0 pb-0">
-                    <v-subheader :style="{color: $store.getters.current.textColor}" class="pt-5">Stats
+                    <v-subheader :style="{color: $store.getters.current.textColor}" class="pt-5">Max Data Points
                     </v-subheader>
                 </v-col>
-                <v-col cols="12" md="8" class="pt-0 pb-0">
+                <v-col cols="8" class="pt-0 pb-0">
+                    <v-text-field
+                            :label="$vuetify.breakpoint.mdAndDown? 'Max Data Points': ''"
+                            v-model="maxpoints"
+                            :dark="$store.getters.current.isDark"
+                            :error-messages="referr[1]"
+                            @input="(val) => {checkNan(val, 1); $store.commit('setMaxStorePoints', val)}"
+                            @focusout="() => this.maxpoints = $store.getters.data.maxStorePoints"
+                    />
+                </v-col>
+            </v-row>
+            <v-row dense>
+                <v-col cols="4" v-if="!$vuetify.breakpoint.mdAndDown" class="pt-0 pb-0">
+                    <v-subheader :style="{color: $store.getters.current.textColor}" class="pt-2">Stats
+                    </v-subheader>
+                </v-col>
+                <v-col cols="12" md="8" class="pt-2 pb-0">
                         <v-btn @click="$store.commit('resetStats')"
                                :style="{color: $store.getters.current.textColor}"
                                :color="$store.getters.current.accent1"
@@ -285,21 +310,11 @@
     export default {
         name: "Options",
         methods: {
-            setTheme(newt) {
-                localStorage.theme = newt;
-                store.commit('setTheme', newt);
-                document.body.style.backgroundColor = store.getters.current.backgroundColor;
-            },
-            commit() {
-                if (this.referr === '') {
-                    localStorage.refresh = store.getters.data.updateInterval
-                }
-            },
-            checkNan(val) {
+            checkNan(val, index) {
                 if (isNaN(val))
-                    this.referr = 'That is not a number!';
+                    this.referr[index] = 'That is not a number!';
                 else {
-                    this.referr = ''
+                    this.referr[index] = ''
                 }
             }
         },
@@ -314,6 +329,9 @@
                 }, {
                     disp: 'Midnight',
                     val: 'midnight'
+                }, {
+                    disp: 'I wan\'t to die',
+                    val: 'eyekiller'
                 }],
                 mcsprev: '1.049 mb',
                 mcs: 1048576,
@@ -327,7 +345,9 @@
                 configerrors: ['', '', '', '', '', '', '', ''],
                 hasBgImage: store.getters.hasBgImage,
                 bgimg: store.getters.bgImg,
-                referr: '',
+                updateInterval: store.getters.data.updateInterval,
+                maxpoints: store.getters.data.maxStorePoints,
+                referr: ['',''],
                 showbar: store.getters.showAppBar,
             }
         },
@@ -360,15 +380,13 @@
         },
         watch: {
             hasbg() {
-                localStorage.hasbg = store.getters.hasBgImage;
                 this.hasBgImage = store.getters.hasBgImage;
             },
             bgurl() {
-                localStorage.bg = store.getters.bgImg;
                 this.bgimg = store.getters.bgImg;
             },
             showAppBar() {
-                localStorage.showBar = store.getters.showAppBar
+
             },
             maxbs() {
                 if (this.mbs === '') {

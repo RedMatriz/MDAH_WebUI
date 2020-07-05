@@ -4,12 +4,13 @@
 
 <script>
     import {Terminal} from "xterm";
+    import {FitAddon} from 'xterm-addon-fit';
 
     export default {
         name: "xterm",
         props: ['lines'],
         data() {
-            return {genid: 'term', term: null}
+            return {genid: 'term', term: null, fitaddon: new FitAddon()}
         },
         beforeMount() {
             let result = '';
@@ -26,24 +27,21 @@
                 cursorStyle: 'underline',
                 fontSize: 15
             });
+            this.term.loadAddon(this.fitaddon);
         },
         mounted() {
             this.term.open(document.getElementById(this.genid))
             window.addEventListener('resize', this.fit)
-            this.fit()
+            this.$nextTick(() => this.fitaddon.fit())
             this.runFakeTerminal()
         },
-        beforeDestroy () {
+        beforeDestroy() {
             this.term.dispose()
             window.removeEventListener('resize', this.fit)
         },
         methods: {
             fit() {
-                let parent = this.$el.parentNode
-                this.term.resize(
-                    Math.floor((parent.offsetWidth - 36) / this.term.getOption("fontSize") * 5 / 3),
-                    Math.floor((window.innerHeight/1.5- 196) / this.term.getOption("fontSize") * 15 / 17),
-                )
+                this.fitaddon.fit()
             },
             runFakeTerminal() {
                 if (this.term._initialized) {
@@ -71,7 +69,6 @@
                             break;
                         default: // Print all other characters for demo
                             this.term.write(e);
-                            this.fit()
                     }
                 });
             },

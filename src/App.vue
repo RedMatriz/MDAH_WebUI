@@ -1,12 +1,12 @@
 <template>
-    <v-app style="background: rgba(0,0,0,0)">
+    <v-app style="background: rgba(0,0,0,0);">
         <v-app-bar
-                :app="$store.getters.showAppBar"
+                app
                 :style="{background: $store.getters.current.primary + $store.getters.alpha}"
                 :clipped-left="!$vuetify.breakpoint.mdAndDown"
                 :hide-on-scroll="$vuetify.breakpoint.mdAndDown"
                 floating
-                :hidden="!$vuetify.breakpoint.mdAndDown && !$store.getters.showAppBar"
+                v-if="$vuetify.breakpoint.mdAndDown || $store.getters.showAppBar"
         >
             <v-app-bar-nav-icon
                     class="hidden-lg-and-up"
@@ -81,17 +81,21 @@
                 }"
         />
         <v-main>
-            <transition name="fade">
-                <router-view/>
-            </transition>
+            <v-fade-transition>
+                <overlay-scrollbars
+                        :options="{className: $store.getters.current.isDark ? 'os-theme-light' :'os-theme-dark', paddingAbsolute: true, scrollbars: { autoHide: 'scroll' }}"
+                        style="height: 100%">
+                    <router-view/>
+                </overlay-scrollbars>
+            </v-fade-transition>
         </v-main>
     </v-app>
+
 </template>
 
 <script>
     import store from "@/store";
 
-    // let clock;
     export default {
         name: 'App',
         timers: {
@@ -114,14 +118,8 @@
             }
         },
         mounted() {
-            fetch("api/pastStats")
-                .then(response => response.json())
-                .then(response => {
-                    response.forEach((k) => store.commit('pushStats', JSON.parse('{' + k + ': ' + JSON.stringify(response[k]) + '}')));
-                }).catch((err) => console.log(err));
-            this.sortData();
-            this.loadData();
             this.$timer.restart('pullData')
+            this.$nextTick(() => store.commit('setLoaded', true))
         },
         computed: {
             refresh() {

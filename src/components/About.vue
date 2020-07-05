@@ -21,43 +21,45 @@
 
 <script>
     import store from '../store/index'
+    import {dataUnits, numberUnits, formatNumber} from "@/constants";
 
     export default {
         name: "About",
         data() {
             return {
+                rel: 0,
                 infoList: [{
-                    name: 'Client Version',
+                    name: 'Client Version (Temporary fake data)',
                     shortValue: '1.0.0',
                     longValue: 'latest: x.x.x'
                 }, {
                     name: 'Total Hits',
                     unitLabel: 'hits',
-                    longValue: store.getters.data.hits[store.getters.data.hits.length - 1][1],
-                    shortValue: this.byteFormat(store.getters.data.hits[store.getters.data.hits.length - 1][1], this.dataUnits),
+                    longValue: store.getters.lastValueOf('hits'),
+                    shortValue: formatNumber(store.getters.lastValueOf('hits'), numberUnits),
                 }, {
                     name: 'Total Misses',
                     unitLabel: 'misses',
-                    longValue: store.getters.data.misses[store.getters.data.misses.length - 1][1],
-                    shortValue: this.byteFormat(store.getters.data.misses[store.getters.data.misses.length - 1][1], this.dataUnits),
+                    longValue:  store.getters.lastValueOf('misses'),
+                    shortValue: formatNumber(store.getters.lastValueOf('misses'), numberUnits),
                 }, {
                     name: 'Total Data Sent',
                     unitLabel: 'bytes',
-                    longValue: store.getters.data.bytesSent[store.getters.data.bytesSent.length - 1][1],
-                    shortValue: this.byteFormat(store.getters.data.bytesSent[store.getters.data.bytesSent.length - 1][1], this.dataUnits),
+                    longValue: store.getters.lastValueOf('bytesSent'),
+                    shortValue: formatNumber(store.getters.lastValueOf('bytesSent'), dataUnits),
                 }, {
                     name: 'Total Requests Served',
                     unitLabel: 'requests',
-                    longValue: store.getters.data.reqServ[store.getters.data.reqServ.length - 1][1],
-                    shortValue: this.byteFormat(store.getters.data.reqServ[store.getters.data.reqServ.length - 1][1], this.dataUnits),
+                    longValue: store.getters.lastValueOf('reqServ'),
+                    shortValue: formatNumber(store.getters.lastValueOf('reqServ'), numberUnits),
                 }, {
                     name: 'Cache Size',
                     unitLabel: 'bytes',
-                    longValue: store.getters.data.sizeDisk[store.getters.data.sizeDisk.length - 1][1],
-                    shortValue: this.byteFormat(store.getters.data.sizeDisk[store.getters.data.sizeDisk.length - 1][1], this.dataUnits),
-                }]
+                    longValue: store.getters.lastValueOf('sizeDisk'),
+                    shortValue: formatNumber(store.getters.lastValueOf('sizeDisk'), dataUnits),
+                }],
             }
-        }
+        },
     }
 </script>
 

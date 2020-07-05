@@ -1,8 +1,8 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
+import {deconstructChart, constructChart} from "@/constants";
 
 Vue.use(Vuex);
-
 
 const state = {
     options: {
@@ -12,19 +12,33 @@ const state = {
         showAppBar: true,
     },
     themes: {
-        light: {
-            backgroundAlpha: 'f0',
-            backgroundColor: '#efeff0',
-            textColor: '#202020',
-            primary: '#fbfbfe',
-            secondary: '#fafafa',
-            accent: '#717175',
-            accent1: 'rgba(150,150,158, 0.3)',
-            accent2: 'rgba(94,94,98,0.7)',
-            green: '#00e000',
-            red: '#e00000',
-            yellow: '#e0e000',
-            isDark: false,
+        light: {                                //internal name for theme
+            backgroundAlpha: 'f0',              //the alpha to apply if a background exists
+            backgroundColor: '#efeff0',         //background color
+            textColor: '#202020',               //text color
+            primary: '#fbfbfe',                 //color of page and side bars
+            secondary: '#fafafa',               //color of title bars and content containers
+            accent: '#717175',                  //misc, mainly used as a secondary text/icon color
+            accent1: 'rgba(150,150,158, 0.3)',  //misc, mainly used as button color
+            accent2: 'rgba(94,94,98,0.7)',      //misc
+            green: '#00e000',                   //unused
+            red: '#e00000',                     //unused
+            yellow: '#e0e000',                  //unused
+            isDark: false,                      //internal use only, will be removed
+        },
+        eyekiller: {  //internal name for theme
+            backgroundAlpha: 'f0',              //the alpha to apply if a background exists
+            backgroundColor: '#26ff00',         //background color
+            textColor: '#000000',               //text color
+            primary: '#ee00ff',                 //color of page and side bars
+            secondary: '#ffc800',               //color of title bars and content containers
+            accent: '#00aeff',                  //misc, mainly used as a secondary text/icon color
+            accent1: 'rgba(255,0,0,0.3)',       //misc, mainly used as button color
+            accent2: 'rgba(0,32,255,0.7)',      //misc
+            green: '#00ff00',                   //unused
+            red: '#ff0000',                     //unused
+            yellow: '#ffff00',                  //unused
+            isDark: false,                      //internal use only, will be removed
         },
         dark: {
             backgroundAlpha: 'f0',
@@ -73,17 +87,244 @@ const state = {
         updateInterval: 2000,
         maxStorePoints: 1801,
     },
-    loaded: false,
     layout: {
-        grid: [
-            {x: 0, y: 0, w: 3, h: 8, i: 0, o: {}},
-            {x: 3, y: 0, w: 9, h: 8, i: 1, o: {}},
-            {x: 0, y: 8, w: 6, h: 8, i: 2, o: {}},
-            {x: 6, y: 8, w: 6, h: 8, i: 3, o: {}}],
-        tempoptions: {title: {text: 'title'}},
-        temppieoptions: {},
+        grid: [],
+        charts: [],
+        tempoptions: {title: {text: 'title'}, legend: {show: true}},
+        temppieoptions: {title: {text: 'title'}, legend: {show: true}},
     }
 };
+
+const defaultLayout = [
+    {x: 0, y: 0, w: 3, h: 8, i: 0},
+    {x: 3, y: 0, w: 9, h: 8, i: 1},
+    {x: 0, y: 8, w: 6, h: 8, i: 2},
+    {x: 6, y: 8, w: 6, h: 8, i: 3}];
+const defaultCharts = [
+    {
+        type: 'pie',
+        title: {
+            left: 'center',
+            text: 'Reliability',
+        },
+        legend: {
+            orient: 'vertical',
+            left: 0,
+            show: true,
+            data: ['Hits', 'Misses', 'Cached'],
+        },
+        series: [
+            {
+                type: 'pie',
+                avoidLabelOverlap: true,
+                label: {
+                    show: false,
+                },
+                labelLine: {
+                    show: false
+                },
+                data: [
+                    {
+                        value: 0,
+                        name: 'Hits',
+                        dataId: 'Hits',
+                        itemStyle: {colorId: 'green'}
+                    },
+                    {
+                        value: 0,
+                        name: 'Misses',
+                        dataId: 'Misses',
+                        itemStyle: {colorId: 'red'}
+                    },
+                    {
+                        value: 0,
+                        name: 'Cached',
+                        dataId: 'Browser Cached',
+                        itemStyle: {colorId: 'accent'}
+                    },
+                ]
+            }
+        ]
+    },
+    {
+        type: 'graph',
+        title: {
+            left: 'center',
+            text: 'Bytes Sent',
+        },
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'cross',
+                label: {
+                    formatter: 'number'
+                },
+            }
+        },
+        legend: {
+            left: 'center',
+            top: 22,
+            data: ['Total', 'Change'],
+        },
+        yAxis: [{
+            type: 'value',
+            name: 'Total',
+            scale: true,
+            axisLabel: {
+                unit: 1
+            },
+            splitLine: {
+                show: false
+            }
+        }, {
+            type: 'value',
+            name: 'Change',
+            scale: true,
+            axisLabel: {
+                unit: 1
+            },
+            splitLine: {
+                show: false
+            }
+        }],
+        series: [{
+            name: 'Total',
+            dataId: 'Bytes Sent',
+            type: 'line',
+            sampling: 'average',
+            showSymbol: false,
+            itemStyle: {
+                colorId: 'text'
+            },
+        }, {
+            name: 'Change',
+            dataId: 'Change in Bytes Sent',
+            yAxisIndex: 1,
+            type: 'bar',
+            itemStyle: {
+                colorId: 'yellow'
+            },
+        }]
+    }, {
+        type: 'graph',
+        title: {
+            left: 'center',
+            text: 'Requests Served',
+        },
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'cross',
+                label: {
+                    formatter: 'number'
+                },
+            }
+        },
+        legend: {
+            left: 'center',
+            top: 22,
+            data: ['Total', 'Change'],
+        },
+        yAxis: [{
+            type: 'value',
+            name: 'Total',
+            scale: true,
+            axisLabel: {
+                unit: 2
+            },
+            splitLine: {
+                show: false
+            }
+        }, {
+            type: 'value',
+            name: 'Change',
+            scale: true,
+            axisLabel: {
+                unit: 2
+            },
+            splitLine: {
+                show: false
+            }
+        }],
+        series: [{
+            name: 'Total',
+            dataId: 'Requests Served',
+            type: 'line',
+            sampling: 'average',
+            showSymbol: false,
+            itemStyle: {
+                colorId: 'text'
+            },
+        }, {
+            name: 'Change',
+            dataId: 'Change in Requests Served',
+            yAxisIndex: 1,
+            type: 'bar',
+            itemStyle: {
+                colorId: 'yellow'
+            },
+        }]
+    }, {
+        type: 'graph',
+        title: {
+            left: 'center',
+            text: 'Cache Size',
+        },
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'cross',
+                label: {
+                    formatter: 'number'
+                },
+            }
+        },
+        legend: {
+            left: 'center',
+            top: 22,
+            data: ['Total', 'Change'],
+        },
+        yAxis: [{
+            type: 'value',
+            name: 'Total',
+            scale: true,
+            axisLabel: {
+                unit: 1
+            },
+            splitLine: {
+                show: false
+            }
+        }, {
+            type: 'value',
+            name: 'Change',
+            scale: true,
+            axisLabel: {
+                unit: 1
+            },
+            splitLine: {
+                show: false
+            }
+        }],
+        series: [{
+            name: 'Total',
+            dataId: 'Bytes On Disk',
+            type: 'line',
+            sampling: 'average',
+            showSymbol: false,
+            itemStyle: {
+                colorId: 'text'
+            },
+        }, {
+            name: 'Change',
+            dataId: 'Change in Bytes On Disk',
+            yAxisIndex: 1,
+            type: 'bar',
+            itemStyle: {
+                colorId: 'yellow'
+            },
+        }]
+    },
+];
 
 const getters = {
     current: state => state.themes[state.options.current],
@@ -96,18 +337,16 @@ const getters = {
     },
     data: state => state.data,
     layout: state => state.layout,
-    loaded: state => state.loaded
+    lastValueOf: (state) => (dataset) => state.data[dataset][state.data[dataset].length - 1] ? state.data[dataset][state.data[dataset].length - 1][1] : 0
 };
-
-const defaultLayout = [
-    {x: 0, y: 0, w: 3, h: 8, i: 0},
-    {x: 3, y: 0, w: 9, h: 8, i: 1},
-    {x: 0, y: 8, w: 6, h: 8, i: 2},
-    {x: 6, y: 8, w: 6, h: 8, i: 3}];
 
 const mutations = {
     setTheme(state, theme) {
         state.options.current = theme;
+        localStorage.theme = theme;
+        if (state.layout.charts.length > 0)
+            state.layout.charts = JSON.parse(localStorage.dashboardCharts).map((x) => constructChart(x))
+        document.body.style.backgroundColor = state.themes[state.options.current].backgroundColor;
     },
     setStats(state, val) {
         state.data.stats = val;
@@ -218,8 +457,10 @@ const mutations = {
         localStorage.stats = '';
     },
     resetLayout(state) {
-        state.layout.grid = defaultLayout;
-        localStorage.layout = JSON.stringify(state.data.layout)
+        state.layout.grid = defaultLayout.map((x) => x);
+        state.layout.charts = defaultCharts.map((x) => constructChart(x));
+        localStorage.dashboardLayout = JSON.stringify(state.layout.grid)
+        localStorage.dashboardCharts = JSON.stringify(state.layout.charts)
     },
     setSpecificLayout(store, val) {
         if (val.w != null)
@@ -230,21 +471,47 @@ const mutations = {
             store.layout.grid[val.i].x = val.x;
         if (val.y != null)
             store.layout.grid[val.i].y = val.y;
+        localStorage.dashboardLayout = JSON.stringify(state.layout.grid)
     },
     setLayout(store, val) {
         store.layout.grid = val;
     },
+    setChart(store, val) {
+        store.layout.charts = val;
+    },
+    addLayoutContainer(store, val) {
+        let id = store.layout.grid.length
+        store.layout.grid.push({x: 0, y: 0, w: 8, h: 8, i: id})
+        store.layout.charts.push(val)
+        localStorage.dashboardCharts = JSON.stringify(store.layout.charts.map((x) => deconstructChart(x, x.type)))
+        localStorage.dashboardLayout = JSON.stringify(state.layout.grid)
+    },
+    removeLayoutContainer(store, val) {
+        store.layout.grid.splice(val, 1)
+        store.layout.charts.splice(val, 1)
+        store.layout.grid.forEach((x, idx) => x.i = idx)
+        localStorage.dashboardCharts = JSON.stringify(store.layout.charts.map((x) => deconstructChart(x, x.type)))
+        localStorage.dashboardLayout = JSON.stringify(state.layout.grid)
+    },
     setHasBg(state, val) {
         state.options.hasBgImage = val;
+        localStorage.hasBackground = state.options.hasBgImage;
     },
     setBgUrl(state, val) {
         state.options.bgImage = val;
+        localStorage.backgroundURL = state.options.bgImage;
     },
     setRefresh(state, val) {
-        state.data.updateInterval = val;
+        if (isNaN(val) || val === '')
+            val = 0
+        state.data.updateInterval = Math.max(parseInt(val), 500);
+        localStorage.refreshRate = state.data.updateInterval;
     },
     setTempOptions(state, val) {
         state.layout.tempoptions = val;
+    },
+    setTempPieOptions(state, val) {
+        state.layout.temppieoptions = val;
     },
     setTempDatasets(state, val) {
         state.layout.tempoptions.series = val;
@@ -254,9 +521,13 @@ const mutations = {
     },
     showAppBar(state, val) {
         state.options.showAppBar = val;
+        localStorage.showAppBar = state.options.showAppBar;
     },
     setMaxStorePoints(state, val) {
-        state.data.maxStorePoints = val;
+        if (isNaN(val) || val === '')
+            val = 0
+        state.data.maxStorePoints = Math.max(parseInt(val), 181);
+        localStorage.maxDataPoints = state.data.maxStorePoints;
     }
 }
 
