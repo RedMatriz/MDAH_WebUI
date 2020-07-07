@@ -16,8 +16,8 @@ export const formatNumber = (value, units, float) => {
 const units = [[], dataUnits, numberUnits]
 
 export const constructChart = (storedConfig) => {
+    let temp = JSON.parse(JSON.stringify(storedConfig));
     if (storedConfig.type === 'graph') {
-        let temp = JSON.parse(JSON.stringify(storedConfig));
         temp.title.textStyle = {
             color: store.getters.current.textColor
         }
@@ -55,7 +55,7 @@ export const constructChart = (storedConfig) => {
             }
         }
         temp.grid = {
-            right: 40,
+            right: 40 + Math.max(0, storedConfig.yAxis.length - 2) * 80,
             left: 40,
             bottom: 40,
             top: 60,
@@ -76,7 +76,7 @@ export const constructChart = (storedConfig) => {
                 }
             },
             axisLabel: {
-                formatter: (value) => moment.utc(value).format('MMM D|h:mma').replace('|', '\n'),
+                formatter: (value) => moment(value).format('MMM D|h:mma').replace('|', '\n'),
                 splitNumber: 10,
                 showMaxLabel: true,
                 showMinLabel: true,
@@ -101,8 +101,8 @@ export const constructChart = (storedConfig) => {
             }
         };
         temp.tooltip.axisPointer.label.formatter = (point) => {
-            if (point.axisDimension === 'x' && point.seriesData[0] && point.seriesData[0].data)
-                return moment.utc(point.seriesData[0].data[0]).format('MMM D, h:mm:ssa')
+            if (point.axisDimension === 'x' && point.seriesData[0] && point.seriesData[0].data){
+                return moment(point.seriesData[0].data[0]).format('MMM D, h:mm:ssa')}
             return formatNumber(point.value, units[temp.yAxis[point.axisIndex].axisLabel.unit], 4)
         }
         temp.dataZoom = [{
@@ -203,7 +203,6 @@ export const constructChart = (storedConfig) => {
         })
         return temp
     } else if (storedConfig.type === 'pie') {
-        let temp = JSON.parse(JSON.stringify(storedConfig));
         temp.title.textStyle = {
             color: store.getters.current.textColor
         }
@@ -320,6 +319,7 @@ export const deconstructChart = (config, type) => {
                     type: 'value',
                     name: x.name,
                     scale: true,
+                    offset: x.offset ? x.offset : 0,
                     axisLabel: {
                         unit: x.axisLabel.unit
                     },
@@ -337,7 +337,8 @@ export const deconstructChart = (config, type) => {
                     yAxisIndex: x.yAxisIndex,
                     showSymbol: false,
                     itemStyle: {
-                        color: x.itemStyle.color
+                        color: x.itemStyle.color,
+                        colorId: x.colorId,
                     }
                 }
             })
@@ -405,6 +406,7 @@ export const loadData = () => {
 export const sortData = () => {
     let stats = store.getters.data.stats;
     store.commit('setStats', quickSort(stats));
+    // localStorage.stats = JSON.stringify(store.getters.data.stats);
 
     function quickSort(origArray) {
         if (origArray.length <= 1) {
@@ -424,7 +426,6 @@ export const sortData = () => {
             return [].concat(quickSort(left), pivot, quickSort(right));
         }
     }
-
     // if (stats.length >= 1)
     //     for (let i = 1; i < stats.length; i++) {
     //         if (Object.keys(stats[i])[0] === Object.keys(stats[i - 1])[0]) {
@@ -432,4 +433,38 @@ export const sortData = () => {
     //             i--
     //         }
     //     }
+}
+
+export const interpData = () =>{
+    // eslint-disable-next-line no-unused-vars
+    let stats = store.getters.data.stats;
+    // eslint-disable-next-line no-unused-vars
+    let updaterate = store.getters.data.updateInterval;
+    //TODO: complete function
+}
+
+export const addData = () => {
+    let inst = {
+        cache_hits: Math.floor(Math.random()*100),
+        cache_misses:  Math.floor(Math.random()*100),
+        browser_cached:  Math.floor(Math.random()*100),
+        bytes_sent:  Math.floor(Math.random()*100),
+        requests_served:  Math.floor(Math.random()*100),
+        bytes_on_disk:  Math.floor(Math.random()*100),
+    }
+    let ti = new Date().toISOString()
+    let time = new Date(moment(ti))
+    store.commit('pushDate', time)
+    store.commit('pushHitsChange', [time, inst.cache_hits - store.getters.lastValueOf('hits')]);
+    store.commit('pushHits', [time, inst.cache_hits]);
+    store.commit('pushMissesChange', [time, inst.cache_misses - store.getters.lastValueOf('misses')]);
+    store.commit('pushMisses', [time, inst.cache_misses]);
+    store.commit('pushCachedChange', [time, inst.browser_cached - store.getters.lastValueOf('cached')]);
+    store.commit('pushCached', [time, inst.browser_cached]);
+    store.commit('pushBytesSentChange', [time, inst.bytes_sent - store.getters.lastValueOf('bytesSent')]);
+    store.commit('pushBytesSent', [time, inst.bytes_sent]);
+    store.commit('pushReqServChange', [time, inst.requests_served - store.getters.lastValueOf('reqServ')]);
+    store.commit('pushReqServ', [time, inst.requests_served]);
+    store.commit('pushSizeDiskChange', [time, inst.bytes_on_disk - store.getters.lastValueOf('sizeDisk')]);
+    store.commit('pushSizeDisk', [time, inst.bytes_on_disk]);
 }

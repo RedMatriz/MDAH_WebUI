@@ -84,6 +84,7 @@ const state = {
         cached: [],
         cachedChange: [],
         stats: [],
+        //TODO: add change/unit of time data
         updateInterval: 2000,
         maxStorePoints: 1801,
     },
@@ -92,6 +93,10 @@ const state = {
         charts: [],
         tempoptions: {title: {text: 'title'}, legend: {show: true}},
         temppieoptions: {title: {text: 'title'}, legend: {show: true}},
+    },
+    console: {
+        data: [],
+        maxLines: 1000
     }
 };
 
@@ -337,6 +342,7 @@ const getters = {
     },
     data: state => state.data,
     layout: state => state.layout,
+    console: state => state.console,
     lastValueOf: (state) => (dataset) => state.data[dataset][state.data[dataset].length - 1] ? state.data[dataset][state.data[dataset].length - 1][1] : 0
 };
 
@@ -366,73 +372,73 @@ const mutations = {
     pushBytesSent(state, val) {
         state.data.bytesSent.push(val);
         while (state.data.bytesSent.length > state.data.maxStorePoints) {
-            state.data.bytesSent.splice(0, state.data.bytesSent.length - state.data.maxStorePoints)
+            state.data.bytesSent.shift()
         }
     },
     pushBytesSentChange(state, val) {
         state.data.bytesSentChange.push(val);
         while (state.data.bytesSentChange.length > state.data.maxStorePoints) {
-            state.data.bytesSentChange.splice(0, state.data.bytesSentChange.length - state.data.maxStorePoints)
+            state.data.bytesSentChange.shift()
         }
     },
     pushReqServ(state, val) {
         state.data.reqServ.push(val);
-        if (state.data.reqServ.length > state.data.maxStorePoints) {
-            state.data.reqServ.splice(0, state.data.reqServ.length - state.data.maxStorePoints)
+        while (state.data.reqServ.length > state.data.maxStorePoints) {
+            state.data.reqServ.shift()
         }
     },
     pushReqServChange(state, val) {
         state.data.reqServChange.push(val);
-        if (state.data.reqServChange.length > state.data.maxStorePoints) {
-            state.data.reqServChange.splice(0, state.data.reqServChange.length - state.data.maxStorePoints)
+        while (state.data.reqServChange.length > state.data.maxStorePoints) {
+            state.data.reqServChange.shift()
         }
     },
     pushSizeDisk(state, val) {
         state.data.sizeDisk.push(val);
-        if (state.data.sizeDisk.length > state.data.maxStorePoints) {
-            state.data.sizeDisk.splice(0, state.data.sizeDisk.length - state.data.maxStorePoints)
+        while (state.data.sizeDisk.length > state.data.maxStorePoints) {
+            state.data.sizeDisk.shift()
         }
     },
     pushSizeDiskChange(state, val) {
         state.data.sizeDiskChange.push(val);
-        if (state.data.sizeDiskChange.length > state.data.maxStorePoints) {
-            state.data.sizeDiskChange.splice(0, state.data.sizeDiskChange.length - state.data.maxStorePoints)
+        while (state.data.sizeDiskChange.length > state.data.maxStorePoints) {
+            state.data.sizeDiskChange.shift()
         }
     },
     pushHits(state, val) {
         state.data.hits.push(val);
-        if (state.data.hits.length > state.data.maxStorePoints) {
-            state.data.hits.splice(0, state.data.hits.length - state.data.maxStorePoints)
+        while (state.data.hits.length > state.data.maxStorePoints) {
+            state.data.hits.shift()
         }
     },
     pushHitsChange(state, val) {
         state.data.hitsChange.push(val);
-        if (state.data.hitsChange.length > state.data.maxStorePoints) {
-            state.data.hitsChange.splice(0, state.data.hitsChange.length - state.data.maxStorePoints)
+        while (state.data.hitsChange.length > state.data.maxStorePoints) {
+            state.data.hitsChange.shift()
         }
     },
     pushMisses(state, val) {
         state.data.misses.push(val);
-        if (state.data.misses.length > state.data.maxStorePoints) {
-            state.data.misses.splice(0, state.data.misses.length - state.data.maxStorePoints)
+        while (state.data.misses.length > state.data.maxStorePoints) {
+            state.data.misses.shift()
         }
     },
     pushMissesChange(state, val) {
         state.data.missesChange.push(val);
-        if (state.data.missesChange.length > state.data.maxStorePoints) {
-            state.data.missesChange.splice(0, state.data.missesChange.length - state.data.maxStorePoints)
+        while (state.data.missesChange.length > state.data.maxStorePoints) {
+            state.data.missesChange.shift()
         }
     },
     pushCached(state, val) {
         state.data.cached.push(val);
-        if (state.data.cached.length > state.data.maxStorePoints) {
-            state.data.cached.splice(0, state.data.cached.length - state.data.maxStorePoints)
+        while (state.data.cached.length > state.data.maxStorePoints) {
+            state.data.cached.shift()
         }
     },
     pushCachedChange(state, val) {
         state.data.cachedChange.push(val);
-        if (state.data.cachedChange.length > state.data.maxStorePoints) {
-            state.data.cachedChange.splice(0, state.data.cachedChange.length - state.data.maxStorePoints)
+        while (state.data.cachedChange.length > state.data.maxStorePoints) {
+            state.data.cachedChange.shift()
         }
     },
     resetStats(state) {
@@ -457,20 +463,26 @@ const mutations = {
         localStorage.stats = '';
     },
     resetLayout(state) {
-        state.layout.grid = defaultLayout.map((x) => x);
+        state.layout.grid = defaultLayout.map((x,) => {
+            return {x: x.x, y: x.y, w: x.w, h: x.h, i: 3 - x.i}
+        });
         state.layout.charts = defaultCharts.map((x) => constructChart(x));
         localStorage.dashboardLayout = JSON.stringify(state.layout.grid)
         localStorage.dashboardCharts = JSON.stringify(state.layout.charts)
     },
     setSpecificLayout(store, val) {
+        let index = 0;
+        store.layout.grid.forEach((x, idx) => {
+            if (x.i === val.i) index = idx
+        })
         if (val.w != null)
-            store.layout.grid[val.i].w = val.w;
+            store.layout.grid[index].w = val.w;
         if (val.h != null)
-            store.layout.grid[val.i].h = val.h;
+            store.layout.grid[index].h = val.h;
         if (val.x != null)
-            store.layout.grid[val.i].x = val.x;
+            store.layout.grid[index].x = val.x;
         if (val.y != null)
-            store.layout.grid[val.i].y = val.y;
+            store.layout.grid[index].y = val.y;
         localStorage.dashboardLayout = JSON.stringify(state.layout.grid)
     },
     setLayout(store, val) {
@@ -481,6 +493,14 @@ const mutations = {
     },
     addLayoutContainer(store, val) {
         let id = store.layout.grid.length
+        let ids = []
+        store.layout.grid.forEach((x) => ids.push(x.i))
+        for (let i = 0; i < ids.length; i++)
+            if (!ids.includes(i)) {
+                id = i
+                break
+            }
+        console.log(id)
         store.layout.grid.push({x: 0, y: 0, w: 8, h: 8, i: id})
         store.layout.charts.push(val)
         localStorage.dashboardCharts = JSON.stringify(store.layout.charts.map((x) => deconstructChart(x, x.type)))
@@ -489,7 +509,6 @@ const mutations = {
     removeLayoutContainer(store, val) {
         store.layout.grid.splice(val, 1)
         store.layout.charts.splice(val, 1)
-        store.layout.grid.forEach((x, idx) => x.i = idx)
         localStorage.dashboardCharts = JSON.stringify(store.layout.charts.map((x) => deconstructChart(x, x.type)))
         localStorage.dashboardLayout = JSON.stringify(state.layout.grid)
     },
@@ -513,12 +532,6 @@ const mutations = {
     setTempPieOptions(state, val) {
         state.layout.temppieoptions = val;
     },
-    setTempDatasets(state, val) {
-        state.layout.tempoptions.series = val;
-    },
-    setLoaded(state, val) {
-        state.loaded = val;
-    },
     showAppBar(state, val) {
         state.options.showAppBar = val;
         localStorage.showAppBar = state.options.showAppBar;
@@ -528,6 +541,18 @@ const mutations = {
             val = 0
         state.data.maxStorePoints = Math.max(parseInt(val), 181);
         localStorage.maxDataPoints = state.data.maxStorePoints;
+    },
+    setConsoleData(state, val) {
+        state.console.data = val
+    },
+    pushConsoleLine(state, val) {
+        state.console.data.push(val)
+        if (state.console.data.length > state.console.maxLines)
+            state.console.data.splice(0, state.console.data.length - state.console.maxLines)
+        localStorage.consoleLines = JSON.stringify(state.console.data)
+    },
+    setMaxConsoleLines(state, val) {
+        state.console.maxLines = val;
     }
 }
 

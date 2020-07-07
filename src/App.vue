@@ -83,10 +83,12 @@
         <v-main>
             <v-fade-transition>
                 <overlay-scrollbars
+                        v-if="!$vuetify.breakpoint.mdAndDown"
                         :options="{className: $store.getters.current.isDark ? 'os-theme-light' :'os-theme-dark', paddingAbsolute: true, scrollbars: { autoHide: 'scroll' }}"
                         style="height: 100%">
                     <router-view/>
                 </overlay-scrollbars>
+                <router-view v-if="$vuetify.breakpoint.mdAndDown"/>
             </v-fade-transition>
         </v-main>
     </v-app>
@@ -95,6 +97,7 @@
 
 <script>
     import store from "@/store";
+    // import moment from "moment";
 
     export default {
         name: 'App',
@@ -114,12 +117,32 @@
         },
         methods: {
             pullData() {
+                // let list = [
+                //     'Upstream query for TESTDATA errored with status TESTDATA',
+                //     'Upstream query for TESTDATA succeeded',
+                //     'Request for TESTDATA missed cache',
+                //     'Request for TESTDATA hit cache',
+                //     'Request for TESTDATA is being served',
+                //     'Request for TESTDATA is being cached and served',
+                //     'Cache download for TESTDATA committed',
+                //     'Cache download for TESTDATA aborted',
+                //     'Cache go/no go for TESTDATA failed'
+                // ]
+                // let levels = [
+                //     'ERROR',
+                //     'WARN ',
+                //     'DEBUG',
+                //     'INFO ',
+                //     'TRACE'
+                // ]
+                // store.commit('pushConsoleLine',moment(moment.now()).format('YYYY-MM-DD hh:mm:ss') + ' ' + levels[Math.floor(Math.random() * levels.length)] + ' ' + list[Math.floor(Math.random() * list.length)])
+
                 this.updateData();
             }
         },
         mounted() {
+            this.timers.pullData.time = store.getters.data.updateInterval
             this.$timer.restart('pullData')
-            this.$nextTick(() => store.commit('setLoaded', true))
         },
         computed: {
             refresh() {

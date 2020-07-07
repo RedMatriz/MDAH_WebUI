@@ -64,7 +64,7 @@
                     <div style="width: 100%; height: 1px;" :style="{backgroundColor: $store.getters.current.accent2}"
                          class="mt-2 mb-2"/>
                     <v-row :class="$vuetify.breakpoint.mdAndDown ? 'mb-12' : ''">
-                        <v-col :cols="$vuetify.breakpoint.mdAndDown ? 12: 4">
+                        <v-col :cols="$vuetify.breakpoint.mdAndDown ? 12: 4" style="position: relative">
                             <chart v-if="$vuetify.breakpoint.mdAndDown"
                                    :key="prevreload"
                                    autoresize
@@ -133,7 +133,8 @@
                                             tile
                                             :dark="$store.getters.current.isDark"
                                     >
-                                        <v-btn v-model="graph"
+                                        <v-btn
+                                                v-model="graph"
                                                :style="{color: $store.getters.current.textColor}"
                                                :color="$store.getters.current.accent1"
                                                small>
@@ -147,390 +148,384 @@
                                     </v-btn-toggle>
                                 </v-col>
                             </v-row>
-                            <div v-if="graph">
-                                <v-btn
-                                        style="width: 100%; height: 14px; padding-top: 2px; padding-bottom: 2px"
-                                        :style="{color: $store.getters.current.textColor}"
-                                        :color="$store.getters.current.accent1"
-                                        elevation="0"
-                                        class="mt-2"
-                                        tile
-                                        small
-                                        @click="() => this.showyaxis = !this.showyaxis"
-                                >
-                                    <v-icon v-if="showyaxis">mdi-chevron-up</v-icon>
-                                    <v-icon v-if="!showyaxis">mdi-chevron-down</v-icon>
-                                    Y-axis
-                                </v-btn>
-                                <v-expand-transition>
-                                    <div v-if="showyaxis">
-                                        <div v-for="(line, index) in $store.getters.layout.tempoptions.yAxis"
-                                             :key="index" :class="$vuetify.breakpoint.mdAndDown ? 'mt-3' : 'mt-1'">
-                                            <div v-if="index > 0" style="width: 100%; height: 1px;"
-                                                 :style="{backgroundColor: $store.getters.current.accent2}"
-                                                 class="mt-2 mb-2"/>
-                                            <v-row dense class="mr-3">
-                                                <v-col cols="2" class="pa-0">
-                                                    <v-btn
-                                                            class="mt-2"
-                                                            small
-                                                            icon
-                                                            :style="{color: $store.getters.current.textColor}"
-                                                            :color="$store.getters.current.accent1"
-                                                            @click="addAxis(index)"
-                                                    >
-                                                        <v-icon>mdi-plus</v-icon>
-                                                    </v-btn>
-                                                    <v-btn
-                                                            class="mt-2"
-                                                            small
-                                                            icon
-                                                            v-if="$store.getters.layout.tempoptions.yAxis.length > 1"
-                                                            :style="{color: $store.getters.current.textColor}"
-                                                            :color="$store.getters.current.accent1"
-                                                            @click="removeAxis(index)"
-                                                    >
-                                                        <v-icon>mdi-minus</v-icon>
-                                                    </v-btn>
-                                                </v-col>
-                                                <v-col class="pa-0">
-                                                    <v-row dense>
-                                                        <v-col v-if="!$vuetify.breakpoint.mdAndDown" cols="4"
-                                                               class="pa-0">
-                                                            <v-subheader
-                                                                    :style="{color: $store.getters.current.textColor}"
-                                                                    class="pl-1">
-                                                                Name
-                                                            </v-subheader>
-                                                        </v-col>
-                                                        <v-col :cols="$vuetify.breakpoint.mdAndDown ? 12: 8"
-                                                               class="pa-0">
-                                                            <v-text-field
-                                                                    :label="$vuetify.breakpoint.mdAndDown ? 'Name' : ''"
-                                                                    style="padding-top: 6px"
-                                                                    dense
-                                                                    v-model="line.name"
-                                                                    :dark="$store.getters.current.isDark"
-                                                            />
-                                                        </v-col>
-                                                    </v-row>
-                                                    <v-row dense>
-                                                        <v-col v-if="!$vuetify.breakpoint.mdAndDown" cols="4"
-                                                               class="pa-0">
-                                                            <v-subheader
-                                                                    :style="{color: $store.getters.current.textColor}"
-                                                                    class="pl-1">
-                                                                Units
-                                                            </v-subheader>
-                                                        </v-col>
-                                                        <v-col :cols="$vuetify.breakpoint.mdAndDown ? 12: 8"
-                                                               class="pa-0">
-                                                            <v-select
-                                                                    :label="$vuetify.breakpoint.mdAndDown ? 'Units' : ''"
-                                                                    style="padding-top: 6px"
-                                                                    dense
-                                                                    :items="units"
-                                                                    :value="line.axisLabel ? line.axisLabel.unit : 0"
-                                                                    item-text="name"
-                                                                    item-value="idx"
-                                                                    :dark="$store.getters.current.isDark"
-                                                                    @change="(x) => setYAxisUnits(x, index)"
-                                                            />
-                                                        </v-col>
-                                                    </v-row>
-                                                </v-col>
-                                            </v-row>
+                            <v-fade-transition>
+                                <div v-if="graph">
+                                    <v-btn
+                                            style="width: 100%; height: 14px; padding-top: 2px; padding-bottom: 2px"
+                                            :style="{color: $store.getters.current.textColor}"
+                                            :color="$store.getters.current.accent1"
+                                            elevation="0"
+                                            class="mt-2"
+                                            tile
+                                            small
+                                            @click="() => this.showyaxis = !this.showyaxis"
+                                    >
+                                        <v-icon v-if="showyaxis">mdi-chevron-up</v-icon>
+                                        <v-icon v-if="!showyaxis">mdi-chevron-down</v-icon>
+                                        Y-axis
+                                    </v-btn>
+                                    <v-expand-transition>
+                                        <div v-if="showyaxis">
+                                            <div v-for="(line, index) in $store.getters.layout.tempoptions.yAxis"
+                                                 :key="index" :class="$vuetify.breakpoint.mdAndDown ? 'mt-3' : 'mt-1'">
+                                                <div v-if="index > 0" style="width: 100%; height: 1px;"
+                                                     :style="{backgroundColor: $store.getters.current.accent2}"
+                                                     class="mt-2 mb-2"/>
+                                                <v-row dense class="mr-3">
+                                                    <v-col cols="2" class="pa-0">
+                                                        <v-btn
+                                                                class="mt-2"
+                                                                small
+                                                                icon
+                                                                :style="{color: $store.getters.current.textColor}"
+                                                                :color="$store.getters.current.accent1"
+                                                                @click="addAxis(index)"
+                                                        >
+                                                            <v-icon>mdi-plus</v-icon>
+                                                        </v-btn>
+                                                        <v-btn
+                                                                class="mt-2"
+                                                                small
+                                                                icon
+                                                                v-if="$store.getters.layout.tempoptions.yAxis.length > 1"
+                                                                :style="{color: $store.getters.current.textColor}"
+                                                                :color="$store.getters.current.accent1"
+                                                                @click="removeAxis(index)"
+                                                        >
+                                                            <v-icon>mdi-minus</v-icon>
+                                                        </v-btn>
+                                                    </v-col>
+                                                    <v-col class="pa-0">
+                                                        <v-row dense>
+                                                            <v-col v-if="!$vuetify.breakpoint.mdAndDown" cols="4"
+                                                                   class="pa-0">
+                                                                <v-subheader
+                                                                        :style="{color: $store.getters.current.textColor}"
+                                                                        class="pl-1">
+                                                                    Name
+                                                                </v-subheader>
+                                                            </v-col>
+                                                            <v-col :cols="$vuetify.breakpoint.mdAndDown ? 12: 8"
+                                                                   class="pa-0">
+                                                                <v-text-field
+                                                                        :label="$vuetify.breakpoint.mdAndDown ? 'Name' : ''"
+                                                                        style="padding-top: 6px"
+                                                                        dense
+                                                                        v-model="line.name"
+                                                                        :dark="$store.getters.current.isDark"
+                                                                />
+                                                            </v-col>
+                                                        </v-row>
+                                                        <v-row dense>
+                                                            <v-col v-if="!$vuetify.breakpoint.mdAndDown" cols="4"
+                                                                   class="pa-0">
+                                                                <v-subheader
+                                                                        :style="{color: $store.getters.current.textColor}"
+                                                                        class="pl-1">
+                                                                    Units
+                                                                </v-subheader>
+                                                            </v-col>
+                                                            <v-col :cols="$vuetify.breakpoint.mdAndDown ? 12: 8"
+                                                                   class="pa-0">
+                                                                <v-select
+                                                                        :label="$vuetify.breakpoint.mdAndDown ? 'Units' : ''"
+                                                                        style="padding-top: 6px"
+                                                                        dense
+                                                                        :items="units"
+                                                                        :value="line.axisLabel ? line.axisLabel.unit : 0"
+                                                                        item-text="name"
+                                                                        item-value="idx"
+                                                                        :dark="$store.getters.current.isDark"
+                                                                        @change="(x) => setYAxisUnits(x, index)"
+                                                                />
+                                                            </v-col>
+                                                        </v-row>
+                                                    </v-col>
+                                                </v-row>
+                                            </div>
                                         </div>
-                                    </div>
-                                </v-expand-transition>
-                                <v-btn
-                                        style="width: 100%; height: 14px; padding-top: 2px; padding-bottom: 2px"
-                                        :style="{color: $store.getters.current.textColor}"
-                                        :color="$store.getters.current.accent1"
-                                        elevation="0"
-                                        class="mt-2"
-                                        tile
-                                        small
-                                        @click="() => this.showdatasets = !this.showdatasets"
-                                >
-                                    <v-icon v-if="showdatasets">mdi-chevron-up</v-icon>
-                                    <v-icon v-if="!showdatasets">mdi-chevron-down</v-icon>
-                                    Datasets
-                                </v-btn>
-                                <v-expand-transition>
-                                    <div v-if="showdatasets">
-                                        <div v-for="(line, index) in $store.getters.layout.tempoptions.series"
-                                             :key="index" :class="$vuetify.breakpoint.mdAndDown ? 'mt-3' : 'mt-1'">
-                                            <div v-if="index > 0" style="width: 100%; height: 1px;"
-                                                 :style="{backgroundColor: $store.getters.current.accent2}"
-                                                 class="mt-2 mb-2"/>
-                                            <v-row dense class="mr-3">
-                                                <v-col cols="2" class="pa-0">
-                                                    <v-btn
-                                                            small
-                                                            icon
-                                                            :style="{color: $store.getters.current.textColor, marginTop: '10px'}"
-                                                            :color="$store.getters.current.accent1"
-                                                            @click="addSet(index)"
-                                                    >
-                                                        <v-icon>mdi-plus</v-icon>
-                                                    </v-btn>
-                                                    <v-btn
-                                                            small
-                                                            icon
-                                                            v-if="$store.getters.layout.tempoptions.series.length > 1"
-                                                            :style="{color: $store.getters.current.textColor, marginTop: '10px'}"
-                                                            :color="$store.getters.current.accent1"
-                                                            @click="removeSet(index)"
-                                                    >
-                                                        <v-icon>mdi-minus</v-icon>
-                                                    </v-btn>
-                                                </v-col>
-                                                <v-col class="pa-0">
-                                                    <v-row dense>
-                                                        <v-col v-if="!$vuetify.breakpoint.mdAndDown" cols="4"
-                                                               class="pa-0">
-                                                            <v-subheader
-                                                                    :style="{color: $store.getters.current.textColor}"
-                                                                    class="pl-1">
-                                                                Name
-                                                            </v-subheader>
-                                                        </v-col>
-                                                        <v-col :cols="$vuetify.breakpoint.mdAndDown ? 12: 8"
-                                                               class="pa-0">
-                                                            <v-text-field
-                                                                    :label="$vuetify.breakpoint.mdAndDown ? 'Name' : ''"
-                                                                    style="padding-top: 6px"
-                                                                    dense
-                                                                    v-model="line.name"
-                                                                    @input="(a) => $store.getters.layout.tempoptions.legend.data[index] = a"
-                                                                    :dark="$store.getters.current.isDark"
-                                                            />
-                                                        </v-col>
-                                                    </v-row>
-                                                    <v-row dense>
-                                                        <v-col v-if="!$vuetify.breakpoint.mdAndDown" cols="4"
-                                                               class="pa-0">
-                                                            <v-subheader
-                                                                    :style="{color: $store.getters.current.textColor}"
-                                                                    class="pl-1">
-                                                                Type
-                                                            </v-subheader>
-                                                        </v-col>
-                                                        <v-col :cols="$vuetify.breakpoint.mdAndDown ? 12: 8"
-                                                               class="pa-0">
-                                                            <v-select
-                                                                    :label="$vuetify.breakpoint.mdAndDown ? 'Type' : ''"
-                                                                    style="padding-top: 6px"
-                                                                    dense
-                                                                    v-model="line.type"
-                                                                    :items="graphTypes"
-                                                                    item-value="val"
-                                                                    item-text="name"
-                                                                    :dark="$store.getters.current.isDark"
-                                                            />
-                                                        </v-col>
-                                                    </v-row>
-                                                    <v-row dense>
-                                                        <v-col v-if="!$vuetify.breakpoint.mdAndDown" cols="4"
-                                                               class="pa-0">
-                                                            <v-subheader
-                                                                    :style="{color: $store.getters.current.textColor}"
-                                                                    class="pl-1">
-                                                                Dataset
-                                                            </v-subheader>
-                                                        </v-col>
-                                                        <v-col :cols="$vuetify.breakpoint.mdAndDown ? 12: 8"
-                                                               class="pa-0">
-                                                            <v-select
-                                                                    :label="$vuetify.breakpoint.mdAndDown ? 'Dataset' : ''"
-                                                                    style="padding-top: 6px"
-                                                                    dense
-                                                                    v-model="line.data"
-                                                                    :items="trackabledata"
-                                                                    item-value="data"
-                                                                    item-text="name"
-                                                                    @change="(a) => trackabledata.forEach((b) => {if(a === b.data) line.dataId = b.name})"
-                                                                    :dark="$store.getters.current.isDark"
-                                                            />
-                                                        </v-col>
-                                                    </v-row>
-                                                    <v-row dense>
-                                                        <v-col v-if="!$vuetify.breakpoint.mdAndDown" cols="4"
-                                                               class="pa-0">
-                                                            <v-subheader
-                                                                    :style="{color: $store.getters.current.textColor}"
-                                                                    class="pl-1">
-                                                                Y-Axis
-                                                            </v-subheader>
-                                                        </v-col>
-                                                        <v-col :cols="$vuetify.breakpoint.mdAndDown ? 12: 8"
-                                                               class="pa-0">
-                                                            <v-select
-                                                                    :label="$vuetify.breakpoint.mdAndDown ? 'Y-Axis' : ''"
-                                                                    style="padding-top: 6px"
-                                                                    dense
-                                                                    :items="$store.getters.layout.tempoptions.yAxis.map((x, i) => ({idx: i, data: x}))"
-                                                                    :value="line.yAxisIndex ? line.yAxisIndex : 0"
-                                                                    item-text="data.name"
-                                                                    item-value="idx"
-                                                                    :dark="$store.getters.current.isDark"
-                                                                    @change="(x) => setYAxis(x, index)"
-                                                            />
-                                                        </v-col>
-                                                    </v-row>
-                                                    <v-row dense>
-                                                        <v-col v-if="!$vuetify.breakpoint.mdAndDown" cols="4"
-                                                               class="pa-0">
-                                                            <v-subheader
-                                                                    :style="{color: $store.getters.current.textColor}"
-                                                                    class="pl-1">
-                                                                Color
-                                                            </v-subheader>
-                                                        </v-col>
-                                                        <v-col :cols="$vuetify.breakpoint.mdAndDown ? 12: 8"
-                                                               class="pa-0">
-                                                            <v-hover v-slot:default="{ hover }">
-                                                                <div>
+                                    </v-expand-transition>
+                                    <v-btn
+                                            style="width: 100%; height: 14px; padding-top: 2px; padding-bottom: 2px"
+                                            :style="{color: $store.getters.current.textColor}"
+                                            :color="$store.getters.current.accent1"
+                                            elevation="0"
+                                            class="mt-2"
+                                            tile
+                                            small
+                                            @click="() => this.showdatasets = !this.showdatasets"
+                                    >
+                                        <v-icon v-if="showdatasets">mdi-chevron-up</v-icon>
+                                        <v-icon v-if="!showdatasets">mdi-chevron-down</v-icon>
+                                        Datasets
+                                    </v-btn>
+                                    <v-expand-transition>
+                                        <div v-if="showdatasets">
+                                            <div v-for="(line, index) in $store.getters.layout.tempoptions.series"
+                                                 :key="index" :class="$vuetify.breakpoint.mdAndDown ? 'mt-3' : 'mt-1'">
+                                                <div v-if="index > 0" style="width: 100%; height: 1px;"
+                                                     :style="{backgroundColor: $store.getters.current.accent2}"
+                                                     class="mt-2 mb-2"/>
+                                                <v-row dense class="mr-3">
+                                                    <v-col cols="2" class="pa-0">
+                                                        <v-btn
+                                                                small
+                                                                icon
+                                                                :style="{color: $store.getters.current.textColor, marginTop: '10px'}"
+                                                                :color="$store.getters.current.accent1"
+                                                                @click="addSet(index)"
+                                                        >
+                                                            <v-icon>mdi-plus</v-icon>
+                                                        </v-btn>
+                                                        <v-btn
+                                                                small
+                                                                icon
+                                                                v-if="$store.getters.layout.tempoptions.series.length > 1"
+                                                                :style="{color: $store.getters.current.textColor, marginTop: '10px'}"
+                                                                :color="$store.getters.current.accent1"
+                                                                @click="removeSet(index)"
+                                                        >
+                                                            <v-icon>mdi-minus</v-icon>
+                                                        </v-btn>
+                                                    </v-col>
+                                                    <v-col class="pa-0">
+                                                        <v-row dense>
+                                                            <v-col v-if="!$vuetify.breakpoint.mdAndDown" cols="4"
+                                                                   class="pa-0">
+                                                                <v-subheader
+                                                                        :style="{color: $store.getters.current.textColor}"
+                                                                        class="pl-1">
+                                                                    Name
+                                                                </v-subheader>
+                                                            </v-col>
+                                                            <v-col :cols="$vuetify.breakpoint.mdAndDown ? 12: 8"
+                                                                   class="pa-0">
+                                                                <v-text-field
+                                                                        :label="$vuetify.breakpoint.mdAndDown ? 'Name' : ''"
+                                                                        style="padding-top: 6px"
+                                                                        dense
+                                                                        v-model="line.name"
+                                                                        @input="(a) => $store.getters.layout.tempoptions.legend.data[index] = a"
+                                                                        :dark="$store.getters.current.isDark"
+                                                                />
+                                                            </v-col>
+                                                        </v-row>
+                                                        <v-row dense>
+                                                            <v-col v-if="!$vuetify.breakpoint.mdAndDown" cols="4"
+                                                                   class="pa-0">
+                                                                <v-subheader
+                                                                        :style="{color: $store.getters.current.textColor}"
+                                                                        class="pl-1">
+                                                                    Type
+                                                                </v-subheader>
+                                                            </v-col>
+                                                            <v-col :cols="$vuetify.breakpoint.mdAndDown ? 12: 8"
+                                                                   class="pa-0">
+                                                                <v-select
+                                                                        :label="$vuetify.breakpoint.mdAndDown ? 'Type' : ''"
+                                                                        style="padding-top: 6px"
+                                                                        dense
+                                                                        v-model="line.type"
+                                                                        :items="graphTypes"
+                                                                        item-value="val"
+                                                                        item-text="name"
+                                                                        :dark="$store.getters.current.isDark"
+                                                                />
+                                                            </v-col>
+                                                        </v-row>
+                                                        <v-row dense>
+                                                            <v-col v-if="!$vuetify.breakpoint.mdAndDown" cols="4"
+                                                                   class="pa-0">
+                                                                <v-subheader
+                                                                        :style="{color: $store.getters.current.textColor}"
+                                                                        class="pl-1">
+                                                                    Dataset
+                                                                </v-subheader>
+                                                            </v-col>
+                                                            <v-col :cols="$vuetify.breakpoint.mdAndDown ? 12: 8"
+                                                                   class="pa-0">
+                                                                <v-select
+                                                                        :label="$vuetify.breakpoint.mdAndDown ? 'Dataset' : ''"
+                                                                        style="padding-top: 6px"
+                                                                        dense
+                                                                        v-model="line.data"
+                                                                        :items="trackabledata"
+                                                                        item-value="data"
+                                                                        item-text="name"
+                                                                        @change="(a) => trackabledata.forEach((b) => {if(a === b.data) line.dataId = b.name})"
+                                                                        :dark="$store.getters.current.isDark"
+                                                                />
+                                                            </v-col>
+                                                        </v-row>
+                                                        <v-row dense>
+                                                            <v-col v-if="!$vuetify.breakpoint.mdAndDown" cols="4"
+                                                                   class="pa-0">
+                                                                <v-subheader
+                                                                        :style="{color: $store.getters.current.textColor}"
+                                                                        class="pl-1">
+                                                                    Y-Axis
+                                                                </v-subheader>
+                                                            </v-col>
+                                                            <v-col :cols="$vuetify.breakpoint.mdAndDown ? 12: 8"
+                                                                   class="pa-0">
+                                                                <v-select
+                                                                        :label="$vuetify.breakpoint.mdAndDown ? 'Y-Axis' : ''"
+                                                                        style="padding-top: 6px"
+                                                                        dense
+                                                                        :items="$store.getters.layout.tempoptions.yAxis.map((x, i) => ({idx: i, data: x}))"
+                                                                        :value="line.yAxisIndex ? line.yAxisIndex : 0"
+                                                                        item-text="data.name"
+                                                                        item-value="idx"
+                                                                        :dark="$store.getters.current.isDark"
+                                                                        @change="(x) => setYAxis(x, index)"
+                                                                />
+                                                            </v-col>
+                                                        </v-row>
+                                                        <v-row dense>
+                                                            <v-col v-if="!$vuetify.breakpoint.mdAndDown" cols="4"
+                                                                   class="pa-0">
+                                                                <v-subheader
+                                                                        :style="{color: $store.getters.current.textColor}"
+                                                                        class="pl-1">
+                                                                    Color
+                                                                </v-subheader>
+                                                            </v-col>
+                                                            <v-col :cols="$vuetify.breakpoint.mdAndDown ? 12: 8"
+                                                                   class="pa-0">
+                                                                <v-hover v-slot:default="{ hover }">
                                                                     <div
-                                                                            style="width: 100%; height: 30px; border: 2px solid; margin-top: 9px"
+                                                                            style="position: relative; width: 100%; height: 30px; border: 2px solid; margin-top: 9px"
                                                                             :style="{backgroundColor: line.itemStyle.color, borderColor: $store.getters.current.textColor}"
                                                                     >
                                                                         <v-scroll-x-transition>
                                                                             <v-color-picker
                                                                                     v-if="hover"
                                                                                     elevation="3"
-                                                                                    style="position: relative; z-index: 99999; top: -260px; left: calc(100% + 2px)"
+                                                                                    style="position: absolute; z-index: 99999; top: -260px; left: calc(100% + 2px)"
                                                                                     hide-mode-switch
                                                                                     :style="{backgroundColor: $store.getters.current.secondary}"
                                                                                     v-model="line.itemStyle.color"
                                                                             />
                                                                         </v-scroll-x-transition>
                                                                     </div>
-                                                                </div>
-                                                            </v-hover>
-                                                        </v-col>
-                                                    </v-row>
-                                                </v-col>
-                                            </v-row>
+                                                                </v-hover>
+                                                            </v-col>
+                                                        </v-row>
+                                                    </v-col>
+                                                </v-row>
+                                            </div>
                                         </div>
-                                    </div>
-                                </v-expand-transition>
-                            </div>
-                            <div v-if="!graph">
-                                <div v-for="(line, index) in $store.getters.layout.temppieoptions.series[0].data"
-                                     :key="index">
-                                    <div v-if="index > 0" style="width: 100%; height: 1px;"
-                                         :style="{backgroundColor: $store.getters.current.accent2}"
-                                         class="mt-2 mb-2"/>
-                                    <v-row dense class="mr-3">
-                                        <v-col cols="2" class="pa-0">
-                                            <v-btn
-                                                    small
-                                                    icon
-                                                    :style="{color: $store.getters.current.textColor, marginTop: '10px'}"
-                                                    :color="$store.getters.current.accent1"
-                                                    @click="addPieSet(index)"
-                                            >
-                                                <v-icon>mdi-plus</v-icon>
-                                            </v-btn>
-                                            <v-btn
-                                                    small
-                                                    icon
-                                                    v-if="$store.getters.layout.temppieoptions.series[0].data.length > 1"
-                                                    :style="{color: $store.getters.current.textColor, marginTop: '10px'}"
-                                                    :color="$store.getters.current.accent1"
-                                                    @click="removePieSet(index)"
-                                            >
-                                                <v-icon>mdi-minus</v-icon>
-                                            </v-btn>
-                                        </v-col>
-                                        <v-col class="pa-0">
-                                            <v-row dense>
-                                                <v-col v-if="!$vuetify.breakpoint.mdAndDown" cols="4" class="pa-0">
-                                                    <v-subheader :style="{color: $store.getters.current.textColor}"
-                                                                 class="pl-1">
-                                                        Name
-                                                    </v-subheader>
-                                                </v-col>
-                                                <v-col :cols="$vuetify.breakpoint.mdAndDown ? 12: 8" class="pa-0">
-                                                    <v-text-field
-                                                            :label="$vuetify.breakpoint.mdAndDown ? 'Name' : ''"
-                                                            style="padding-top: 6px"
-                                                            dense
-                                                            v-model="line.name"
-                                                            @input="(a) => $store.getters.layout.temppieoptions.legend.data[index] = a"
-                                                            :dark="$store.getters.current.isDark"
-                                                    />
-                                                </v-col>
-                                            </v-row>
-                                            <v-row dense>
-                                                <v-col v-if="!$vuetify.breakpoint.mdAndDown" cols="4" class="pa-0">
-                                                    <v-subheader :style="{color: $store.getters.current.textColor}"
-                                                                 class="pl-1">
-                                                        Dataset
-                                                    </v-subheader>
-                                                </v-col>
-                                                <v-col :cols="$vuetify.breakpoint.mdAndDown ? 12: 8" class="pa-0">
-                                                    <v-select
-                                                            :label="$vuetify.breakpoint.mdAndDown ? 'Dataset' : ''"
-                                                            style="padding-top: 6px"
-                                                            dense
-                                                            v-model="line.value"
-                                                            :items="trackabledata"
-                                                            :item-value="(data) => data.data[data.data.length-1][1]"
-                                                            @change="(a) => trackabledata.forEach((b) => {if(a === b.data[b.data.length-1][1]) line.dataId = b.name})"
-                                                            item-text="name"
-                                                            :dark="$store.getters.current.isDark"
-                                                    />
-                                                </v-col>
-                                            </v-row>
-                                            <v-row dense>
-                                                <v-col v-if="!$vuetify.breakpoint.mdAndDown" cols="4" class="pa-0">
-                                                    <v-subheader :style="{color: $store.getters.current.textColor}"
-                                                                 class="pl-1">
-                                                        Color
-                                                    </v-subheader>
-                                                </v-col>
-                                                <v-col :cols="$vuetify.breakpoint.mdAndDown ? 12: 8" class="pa-0">
-                                                    <v-hover v-slot:default="{ hover }">
-                                                        <div>
+                                    </v-expand-transition>
+                                </div>
+                            </v-fade-transition>
+                            <v-fade-transition>
+                                <div v-if="!graph">
+                                    <div v-for="(line, index) in $store.getters.layout.temppieoptions.series[0].data"
+                                         :key="index">
+                                        <div v-if="index > 0" style="width: 100%; height: 1px;"
+                                             :style="{backgroundColor: $store.getters.current.accent2}"
+                                             class="mt-2 mb-2"/>
+                                        <v-row dense class="mr-3">
+                                            <v-col cols="2" class="pa-0">
+                                                <v-btn
+                                                        small
+                                                        icon
+                                                        :style="{color: $store.getters.current.textColor, marginTop: '10px'}"
+                                                        :color="$store.getters.current.accent1"
+                                                        @click="addPieSet(index)"
+                                                >
+                                                    <v-icon>mdi-plus</v-icon>
+                                                </v-btn>
+                                                <v-btn
+                                                        small
+                                                        icon
+                                                        v-if="$store.getters.layout.temppieoptions.series[0].data.length > 1"
+                                                        :style="{color: $store.getters.current.textColor, marginTop: '10px'}"
+                                                        :color="$store.getters.current.accent1"
+                                                        @click="removePieSet(index)"
+                                                >
+                                                    <v-icon>mdi-minus</v-icon>
+                                                </v-btn>
+                                            </v-col>
+                                            <v-col class="pa-0">
+                                                <v-row dense>
+                                                    <v-col v-if="!$vuetify.breakpoint.mdAndDown" cols="4" class="pa-0">
+                                                        <v-subheader :style="{color: $store.getters.current.textColor}"
+                                                                     class="pl-1">
+                                                            Name
+                                                        </v-subheader>
+                                                    </v-col>
+                                                    <v-col :cols="$vuetify.breakpoint.mdAndDown ? 12: 8" class="pa-0">
+                                                        <v-text-field
+                                                                :label="$vuetify.breakpoint.mdAndDown ? 'Name' : ''"
+                                                                style="padding-top: 6px"
+                                                                dense
+                                                                v-model="line.name"
+                                                                @input="(a) => $store.getters.layout.temppieoptions.legend.data[index] = a"
+                                                                :dark="$store.getters.current.isDark"
+                                                        />
+                                                    </v-col>
+                                                </v-row>
+                                                <v-row dense>
+                                                    <v-col v-if="!$vuetify.breakpoint.mdAndDown" cols="4" class="pa-0">
+                                                        <v-subheader :style="{color: $store.getters.current.textColor}"
+                                                                     class="pl-1">
+                                                            Dataset
+                                                        </v-subheader>
+                                                    </v-col>
+                                                    <v-col :cols="$vuetify.breakpoint.mdAndDown ? 12: 8" class="pa-0">
+                                                        <v-select
+                                                                :label="$vuetify.breakpoint.mdAndDown ? 'Dataset' : ''"
+                                                                style="padding-top: 6px"
+                                                                dense
+                                                                v-model="line.value"
+                                                                :items="trackabledata"
+                                                                :item-value="(data) => data.data[data.data.length-1][1]"
+                                                                @change="(a) => trackabledata.forEach((b) => {if(a === b.data[b.data.length-1][1]) line.dataId = b.name})"
+                                                                item-text="name"
+                                                                :dark="$store.getters.current.isDark"
+                                                        />
+                                                    </v-col>
+                                                </v-row>
+                                                <v-row dense>
+                                                    <v-col v-if="!$vuetify.breakpoint.mdAndDown" cols="4" class="pa-0">
+                                                        <v-subheader :style="{color: $store.getters.current.textColor}"
+                                                                     class="pl-1">
+                                                            Color
+                                                        </v-subheader>
+                                                    </v-col>
+                                                    <v-col :cols="$vuetify.breakpoint.mdAndDown ? 12: 8" class="pa-0">
+                                                        <v-hover v-slot:default="{ hover }">
                                                             <div
-                                                                    style="width: 100%; height: 30px; border: 2px solid; margin-top: 9px"
+                                                                    style="position: relative; width: 100%; height: 30px; border: 2px solid; margin-top: 9px"
                                                                     :style="{backgroundColor: line.itemStyle.color, borderColor: $store.getters.current.textColor}"
                                                             >
                                                                 <v-scroll-x-transition>
                                                                     <v-color-picker
                                                                             v-if="hover"
                                                                             elevation="3"
-                                                                            style="position: relative; z-index: 99999; top: -260px; left: calc(100% + 2px)"
+                                                                            style="position: absolute; z-index: 99999; top: -260px; left: calc(100% + 2px)"
                                                                             hide-mode-switch
                                                                             :style="{backgroundColor: $store.getters.current.secondary}"
                                                                             v-model="line.itemStyle.color"
                                                                     />
                                                                 </v-scroll-x-transition>
                                                             </div>
-                                                        </div>
-                                                    </v-hover>
-                                                </v-col>
-                                            </v-row>
-                                        </v-col>
-                                    </v-row>
+                                                        </v-hover>
+                                                    </v-col>
+                                                </v-row>
+                                            </v-col>
+                                        </v-row>
+                                    </div>
                                 </div>
-                            </div>
+                            </v-fade-transition>
                         </v-col>
                         <v-col cols="8" v-if="!$vuetify.breakpoint.mdAndDown">
-                            <chart v-if="graph"
+                            <chart
                                    :key="prevreload"
                                    autoresize
                                    style="width: 100%; left: 0"
-                                   :options="$store.getters.layout.tempoptions"
-                            />
-                            <chart v-if="!graph"
-                                   :key="prevreload"
-                                   autoresize
-                                   style="width: 100%; left: 0"
-                                   :options="$store.getters.layout.temppieoptions"
+                                   :options="graph ? $store.getters.layout.tempoptions: $store.getters.layout.temppieoptions"
                             />
                         </v-col>
                     </v-row>
@@ -544,12 +539,15 @@
                 </v-container>
             </modal>
         </div>
+        <v-btn @click="adddata">
+            add
+        </v-btn>
     </v-container>
 </template>
 
 <script>
     import store from '../store/index';
-    import {dataUnits, numberUnits, formatNumber, constructChart, deconstructChart} from "@/constants";
+    import {dataUnits, numberUnits, formatNumber, constructChart, deconstructChart, addData} from "@/constants";
     import moment from "moment";
     import DashGrid from "@/components/dashGrid";
     import Vue from 'vue'
@@ -594,14 +592,18 @@
                     {name: 'Change in Bytes On Disk', data: store.getters.data.sizeDiskChange},
                 ],
                 graphTypes: [{name: 'Line', val: 'line'}, {name: 'Bar', val: 'bar'}],
+                instance: null
             }
         },
         mounted() {
             this.$nextTick(() => {
-                let instance = new ComponentClass()
-                instance.$mount()
-                this.$refs.grid.appendChild(instance.$el)
+                this.instance = new ComponentClass()
+                this.instance.$mount()
+                this.$refs.grid.appendChild(this.instance.$el)
             })
+        },
+        beforeDestroy() {
+            this.instance.$destroy()
         },
         methods: {
             construct: (a) => constructChart(a),
@@ -891,9 +893,18 @@
                 this.prevreload = !this.prevreload
             },
             exportgraph: (a, t) => deconstructChart(a, t),
+            adddata: ()=> addData(),
             log(a) {
                 console.log(a)
             }
         },
+        computed: {
+            g() {return this.graph}
+        },
+        watch:{
+            g(){
+                this.prevreload = !this.prevreload
+            }
+        }
     }
 </script>

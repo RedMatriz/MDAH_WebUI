@@ -35,40 +35,23 @@ Vue.mixin({
                     localStorage.stats = JSON.stringify(store.getters.data.stats);
                     let key = Object.keys(response)[0]
                     let inst = response[key];
-                    let hist = store.getters.data.stats.length > 1 ?
-                        store.getters.data.stats[store.getters.data.stats.length - 1][Object.keys(store.getters.data.stats[store.getters.data.stats.length - 1])[0]]
-                        : null;
                     let time = new Date(moment(key));
                     store.commit('pushDate', key)
+                    store.commit('pushHitsChange', [time, inst.cache_hits - store.getters.lastValueOf('hits')]);
                     store.commit('pushHits', [time, inst.cache_hits]);
-                    store.commit('pushHitsChange', [time, hist ? inst.cache_hits - hist.cache_hits : 0]);
+                    store.commit('pushMissesChange', [time, inst.cache_misses - store.getters.lastValueOf('misses')]);
                     store.commit('pushMisses', [time, inst.cache_misses]);
-                    store.commit('pushMissesChange', [time, hist ? inst.cache_misses - hist.cache_misses : 0]);
+                    store.commit('pushCachedChange', [time, inst.browser_cached - store.getters.lastValueOf('cached')]);
                     store.commit('pushCached', [time, inst.browser_cached]);
-                    store.commit('pushCachedChange', [time, hist ? inst.browser_cached - hist.browser_cached : 0]);
+                    store.commit('pushBytesSentChange', [time, inst.bytes_sent - store.getters.lastValueOf('bytesSent')]);
                     store.commit('pushBytesSent', [time, inst.bytes_sent]);
-                    store.commit('pushBytesSentChange', [time, hist ? inst.bytes_sent - hist.bytes_sent : 0]);
+                    store.commit('pushReqServChange', [time, inst.requests_served - store.getters.lastValueOf('reqServ')]);
                     store.commit('pushReqServ', [time, inst.requests_served]);
-                    store.commit('pushReqServChange', [time, hist ? inst.requests_served - hist.requests_served : 0]);
+                    store.commit('pushSizeDiskChange', [time, inst.bytes_on_disk - store.getters.lastValueOf('sizeDisk')]);
                     store.commit('pushSizeDisk', [time, inst.bytes_on_disk]);
-                    store.commit('pushSizeDiskChange', [time, hist ? inst.bytes_on_disk - hist.bytes_on_disk : 0]);
                 }).catch((err) => {
                 console.log(err);
             });
-            // let temp = moment.now()
-            // store.commit('pushDate',temp)
-            // store.commit('pushHits', [temp, Math.floor(Math.random()*100)]);
-            // store.commit('pushHitsChange', [temp, Math.floor(Math.random()*100)]);
-            // store.commit('pushMisses', [temp, Math.floor(Math.random()*100)]);
-            // store.commit('pushMissesChange', [temp, Math.floor(Math.random()*100)]);
-            // store.commit('pushCached', [temp, Math.floor(Math.random()*100)]);
-            // store.commit('pushCachedChange', [temp, Math.floor(Math.random()*100)]);
-            // store.commit('pushBytesSent', [temp, Math.floor(Math.random()*100)]);
-            // store.commit('pushBytesSentChange', [temp, Math.floor(Math.random()*100)]);
-            // store.commit('pushReqServ', [temp, Math.floor(Math.random()*100)]);
-            // store.commit('pushReqServChange', [temp,Math.floor(Math.random()*100)]);
-            // store.commit('pushSizeDisk', [temp, Math.floor(Math.random()*100)]);
-            // store.commit('pushSizeDiskChange', [temp, Math.floor(Math.random()*100)]);
         },
     }
 })
@@ -82,8 +65,8 @@ fetch("api/pastStats")
     }))
     .then(response => {
         if (response === null) return;
-        response.forEach((k) => {
-            store.commit('pushStats', JSON.parse('{' + k + ': ' + JSON.stringify(response[k]) + '}'))
+        Object.keys(response).forEach((k) => {
+            store.commit('pushStats', JSON.parse('{"' + k + '": ' + JSON.stringify(response[k]) + '}'))
         });
     }).catch((err) => console.log(err));
 sortData();
@@ -113,7 +96,8 @@ if (localStorage.dashboardLayout) {
     store.commit('resetLayout');
 if (localStorage.refreshRate)
     store.commit('setRefresh', parseInt(localStorage.refreshRate))
-
+if(localStorage.consoleLines)
+    store.commit('setConsoleData', JSON.parse(localStorage.consoleLines))
 
 new Vue({
     render: h => h(App),

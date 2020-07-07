@@ -1,5 +1,5 @@
 <template>
-    <v-container fluid :style="{color: $store.getters.current.textColor}">
+    <v-container fluid :style="{color: $store.getters.current.textColor}" style="height: 100%">
         <v-container fluid class="pt-0 pb-0"
                      :style="{backgroundColor: $store.getters.current.secondary + $store.getters.alpha}">
             <v-row>
@@ -17,13 +17,34 @@
                 </v-col>
             </v-row>
         </v-container>
-        <xterm style="width: 100%; " class="mt-3 mb-3"></xterm>
+        <v-container fluid class="pa-0 mt-3">
+            <xterm style="width: 100%;" class="mb-3"/>
+        </v-container>
+        <v-container fluid :style="{backgroundColor: $store.getters.current.secondary + $store.getters.alpha}" class="pa-0 mt-3">
+            <v-row>
+                <v-col>
+                    <h3>Some Buttons</h3>
+                </v-col>
+                <v-col>
+                    <h3>Some Buttons</h3>
+                </v-col>
+                <v-col>
+                    <h3>Some Buttons</h3>
+                </v-col>
+                <v-col>
+                    <h3>Some Buttons</h3>
+                </v-col>
+                <v-col>
+                    <h3>Some Buttons</h3>
+                </v-col>
+            </v-row>
+        </v-container>
+
     </v-container>
 </template>
 
 <script>
     import Xterm from "@/components/xterm";
-
 
     export default {
         name: "Console",

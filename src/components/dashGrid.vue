@@ -27,7 +27,7 @@
                 <chart
                         style="height: 100%;width: 100%"
                         autoresize
-                        :options="store.getters.layout.charts[index]"
+                        :options="store.getters.layout.charts[getIndex(item.i)]"
                 />
             </v-container>
             <v-icon :style="{position: 'absolute', color: store.getters.current.accent, left: 'calc(50% - 5px)', width: '10px'}"
@@ -40,7 +40,7 @@
             </v-icon>
             <v-icon :style="{position: 'absolute', color: store.getters.current.accent, top: '2px', right: '2px'}"
                     dense small
-                    @click="store.commit('removeLayoutContainer',item.i)"
+                    @click="store.commit('removeLayoutContainer', index)"
             >mdi-close
             </v-icon>
         </grid-item>
@@ -69,6 +69,13 @@
             resized(i, newH, newW) {
                 store.commit('setSpecificLayout', {i: i, w: newW, h: newH})
             },
+            getIndex: (id) => {
+                let indx = 0;
+                store.getters.layout.grid.forEach((x, idx) => {
+                    if (id === x.i) indx = idx
+                })
+                return indx
+            }
         },
         computed: {
             update() {

@@ -5,12 +5,15 @@
 <script>
     import {Terminal} from "xterm";
     import {FitAddon} from 'xterm-addon-fit';
+    // import moment from 'moment'
+    import store from '../store/index'
+    import 'xterm/css/xterm.css'
 
     export default {
         name: "xterm",
         props: ['lines'],
         data() {
-            return {genid: 'term', term: null, fitaddon: new FitAddon()}
+            return {genid: 'term', term: null, fitaddon: new FitAddon(), currentLine: 0}
         },
         beforeMount() {
             let result = '';
@@ -21,8 +24,6 @@
             this.genid = result;
             this.term = new Terminal({
                 disableStdin: false,
-                rows: 30,
-                cols: 50,
                 cursorBlink: true,
                 cursorStyle: 'underline',
                 fontSize: 15
@@ -30,12 +31,15 @@
             this.term.loadAddon(this.fitaddon);
         },
         mounted() {
+            this.currentLine = store.getters.console.data.length
             this.term.open(document.getElementById(this.genid))
             window.addEventListener('resize', this.fit)
             this.$nextTick(() => this.fitaddon.fit())
             this.runFakeTerminal()
+            store.getters.console.data.forEach((x) => this.writeMessage(x))
         },
         beforeDestroy() {
+            clearInterval(this)
             this.term.dispose()
             window.removeEventListener('resize', this.fit)
         },
@@ -43,215 +47,94 @@
             fit() {
                 this.fitaddon.fit()
             },
+            writeMessage(input) {
+                let date = input.substr(0, 20)
+                let type = input.substr(20, 5)
+                let message = input.substr(26)
+                let tid = ''
+                let line = ''
+                if (message.includes('hit cache') || message.includes('cached and served') || message.includes('being served')) {
+                    line = '\x1b[1;34m' //bright blue
+                } else if (message.includes('missed cache')) {
+                    line = '\x1b[34m' //blue
+                }
+                // else if ()) {
+                //     line = '\x1b[32m' //green
+                // }
+                else if (message.includes('succeeded') || message.includes('committed')) { //success color
+                    line = '\x1b[1;32m' //bright green
+                } else if (message.includes('errored') || message.includes('failed') || message.includes('aborted')) { //fail color
+                    line = '\x1b[1;31m' //bright red
+                }
+                switch (type){
+                    case 'ERROR':
+                        tid = '\x1b[1;31m' //bright red
+                        break
+                    case 'WARN ':
+                        tid = '\x1b[1;33m' //bright yellow
+                        break
+                    case 'DEBUG':
+                        tid = '\x1b[1;36m' //bright cyan
+                        break
+                }
+                this.term.writeln(date + tid + type + ' \x1b[0m' + line + message + '\x1b[0m')
+            },
             runFakeTerminal() {
                 if (this.term._initialized) {
                     return;
                 }
                 this.term._initialized = true;
-                this.term.writeln('Welcome to the Web UI console');
+                //https://xtermjs.org/docs/api/terminal/interfaces/itheme/
+                //colors ^
+                this.term.writeln('\x1b[1;32mWelcome to the Web UI console');
                 this.term.writeln('Anti was super lazy and didnt bother to actually implement a console sync');
                 this.term.writeln('Go ping him (please don\'t) to do some more work and stop reading manga');
                 this.term.writeln('You\'re still free to type and spam in this console to your heart\'s content tho');
-                this.term.writeln('');
-                this.prompt(this.term);
-
-                this.term.onData(e => {
-                    switch (e) {
-                        case '\r': // Enter
-                        case '\u0003': // Ctrl+C
-                            this.prompt(this.term);
-                            break;
-                        case '\u007F': // Backspace (DEL)
-                            // Do not delete the prompt
-                            if (this.term._core.buffer.x > 2) {
-                                this.term.write('\b \b');
-                            }
-                            break;
-                        default: // Print all other characters for demo
-                            this.term.write(e);
-                    }
-                });
+                this.term.writeln('\x1b[0m');
+                // this.prompt(this.term);
+                //
+                // this.term.onData(e => {
+                //     switch (e) {
+                //         case '\r': // Enter
+                //         case '\u0003': // Ctrl+C
+                //             this.prompt(this.term);
+                //             break;
+                //         case '\u007F': // Backspace (DEL)
+                //             // Do not delete the prompt
+                //             if (this.term._core.buffer.x > 2) {
+                //                 this.term.write('\b \b');
+                //             }
+                //             break;
+                //         default: // Print all other characters for demo
+                //             this.term.write(e);
+                //     }
+                // });
             },
             prompt(t) {
                 t.write('\r\n> ');
+            }
+        },
+        computed: {
+            terchanged(){
+                return store.getters.console.data
+            }
+        },
+        watch: {
+            terchanged(){
+                let looped = false
+                for (let i = this.currentLine; i < store.getters.console.data.length; i++){
+                    this.writeMessage(store.getters.console.data[i])
+                    looped = true
+                }
+                if (!looped)
+                    this.writeMessage(store.getters.console.data[store.getters.console.data.length - 1])
+                this.currentLine = store.getters.console.data.length
             }
         }
     }
 </script>
 
 <style>
-    /**
-     * Copyright (c) 2014 The xterm.js authors. All rights reserved.
-     * Copyright (c) 2012-2013, Christopher Jeffrey (MIT License)
-     * https://github.com/chjj/term.js
-     * @license MIT
-     *
-     * Permission is hereby granted, free of charge, to any person obtaining a copy
-     * of this software and associated documentation files (the "Software"), to deal
-     * in the Software without restriction, including without limitation the rights
-     * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-     * copies of the Software, and to permit persons to whom the Software is
-     * furnished to do so, subject to the following conditions:
-     *
-     * The above copyright notice and this permission notice shall be included in
-     * all copies or substantial portions of the Software.
-     *
-     * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-     * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-     * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-     * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-     * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-     * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-     * THE SOFTWARE.
-     *
-     * Originally forked from (with the author's permission):
-     *   Fabrice Bellard's javascript vt100 for jslinux:
-     *   http://bellard.org/jslinux/
-     *   Copyright (c) 2011 Fabrice Bellard
-     *   The original design remains. The terminal itself
-     *   has been extended to include xterm CSI codes, among
-     *   other features.
-     */
-
-    /**
-     *  Default styles for xterm.js
-     */
-
-    .xterm {
-        font-feature-settings: "liga" 0;
-        position: relative;
-        user-select: none;
-        -ms-user-select: none;
-        -webkit-user-select: none;
-    }
-
-    .xterm.focus,
-    .xterm:focus {
-        outline: none;
-    }
-
-    .xterm .xterm-helpers {
-        position: absolute;
-        top: 0;
-        /**
-         * The z-index of the helpers must be higher than the canvases in order for
-         * IMEs to appear on top.
-         */
-        z-index: 5;
-    }
-
-    .xterm .xterm-helper-textarea {
-        /*
-         * HACK: to fix IE's blinking cursor
-         * Move textarea out of the screen to the far left, so that the cursor is not visible.
-         */
-        position: absolute;
-        opacity: 0;
-        left: -9999em;
-        top: 0;
-        width: 0;
-        height: 0;
-        z-index: -5;
-        /** Prevent wrapping so the IME appears against the textarea at the correct position */
-        white-space: nowrap;
-        overflow: hidden;
-        resize: none;
-    }
-
-    .xterm .composition-view {
-        /* TODO: Composition position got messed up somewhere */
-        background: #000;
-        color: #FFF;
-        display: none;
-        position: absolute;
-        white-space: nowrap;
-        z-index: 1;
-    }
-
-    .xterm .composition-view.active {
-        display: block;
-    }
-
-    .xterm .xterm-viewport {
-        /* On OS X this is required in order for the scroll bar to appear fully opaque */
-        background-color: #000;
-        overflow-y: scroll;
-        cursor: default;
-        position: absolute;
-        right: 0;
-        left: 0;
-        top: 0;
-        bottom: 0;
-    }
-
-    .xterm .xterm-screen {
-        position: relative;
-    }
-
-    .xterm .xterm-screen canvas {
-        position: absolute;
-        left: 0;
-        top: 0;
-    }
-
-    .xterm .xterm-scroll-area {
-        visibility: hidden;
-    }
-
-    .xterm-char-measure-element {
-        display: inline-block;
-        visibility: hidden;
-        position: absolute;
-        top: 0;
-        left: -9999em;
-        line-height: normal;
-    }
-
-    .xterm {
-        cursor: text;
-    }
-
-    .xterm.enable-mouse-events {
-        /* When mouse events are enabled (eg. tmux), revert to the standard pointer cursor */
-        cursor: default;
-    }
-
-    .xterm.xterm-cursor-pointer {
-        cursor: pointer;
-    }
-
-    .xterm.column-select.focus {
-        /* Column selection mode */
-        cursor: crosshair;
-    }
-
-    .xterm .xterm-accessibility,
-    .xterm .xterm-message {
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        right: 0;
-        z-index: 10;
-        color: transparent;
-    }
-
-    .xterm .live-region {
-        position: absolute;
-        left: -9999px;
-        width: 1px;
-        height: 1px;
-        overflow: hidden;
-    }
-
-    .xterm-dim {
-        opacity: 0.5;
-    }
-
-    .xterm-underline {
-        text-decoration: underline;
-    }
-
     .xterm ::-webkit-scrollbar {
         width: 7px;
     }
@@ -262,8 +145,6 @@
     }
 
     .xterm ::-webkit-scrollbar-thumb {
-
         background-color: #FFF;
     }
-
 </style>

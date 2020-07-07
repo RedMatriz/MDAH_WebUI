@@ -1,5 +1,5 @@
 <template>
-    <div style="position: relative; width: 100%; height: 100%" ref="gcontainer">
+    <div ref="gcontainer">
         <chart
                 style="height: 100%;width: 100%"
                 ref="placeholder"
@@ -42,7 +42,8 @@
                     dataZoom: this.options.dataZoom,
                     series: [{
                         type: this.options.series[0].type
-                    }]
+                    }],
+                    instance: null
                 }
             }
         },
@@ -53,8 +54,10 @@
                 textColor: store.getters.current.textColor,
                 maskColor: store.getters.current.primary +  '9f'
             })
+            this.$refs.placeholder.$el.style.width = this.$el.style.width
+            this.$refs.placeholder.$el.style.height = this.$el.style.height
             this.$nextTick(() => {
-                let instance = new ComponentClass({
+                this.instance = new ComponentClass({
                     propsData: {
                         options: this.options,
                         theme: this.theme,
@@ -65,16 +68,19 @@
                         manualUpdate: this.manualUpdate
                     }
                 })
-                instance.$mount()
-                instance.$el.style.width = '100%'
-                instance.$el.style.height = '100%'
-                instance.chart.on('finished', () => {
-                    instance.chart.off('finished')
+                this.instance.$mount()
+                this.instance.$el.style.width = this.$el.style.width
+                this.instance.$el.style.height = this.$el.style.height
+                this.instance.chart.on('finished', () => {
+                    this.instance.chart.off('finished')
                     this.$refs.gcontainer.removeChild(this.$refs.placeholder.$el)
-                    this.$refs.gcontainer.appendChild(instance.$el)
+                    this.$refs.gcontainer.appendChild(this.instance.$el)
                 })
             })
         },
+        beforeDestroy(){
+            this.instance.$destroy()
+        }
     }
 </script>
 

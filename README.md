@@ -59,8 +59,8 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 
 ### Options
 
- - [ ] Data refresh rate
- - [ ] Data time frame
+ - [x] Data refresh rate
+ - [x] Data time frame
  - [ ] Theme customizer
  - [x] Themes/Styles
  - [x] Animations

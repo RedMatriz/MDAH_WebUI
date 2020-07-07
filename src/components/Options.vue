@@ -330,7 +330,7 @@
                     disp: 'Midnight',
                     val: 'midnight'
                 }, {
-                    disp: 'I wan\'t to die',
+                    disp: 'I want to die',
                     val: 'eyekiller'
                 }],
                 mcsprev: '1.049 mb',
