@@ -2,7 +2,7 @@
     <grid-layout
             style="width: 100%;"
             :layout.sync="store.getters.layout.grid"
-            :col-num="12"
+            :col-num="24"
             :row-height="30"
             :margin="[12,12]"
             :is-draggable="true"
@@ -23,13 +23,12 @@
                    @resize="resized"
 
         >
-            <v-container fluid style="height: 100%;width: 100%; position: absolute" class="no-drag">
-                <chart
-                        style="height: 100%;width: 100%"
-                        autoresize
-                        :options="store.getters.layout.charts[getIndex(item.i)]"
-                />
-            </v-container>
+            <chart
+                    class="no-drag"
+                    style="height: 100%;width: 100%; position: absolute"
+                    autoresize
+                    :options="store.getters.layout.charts[getIndex(item.i)]"
+            />
             <v-icon :style="{position: 'absolute', color: store.getters.current.accent, left: 'calc(50% - 5px)', width: '10px'}"
                     dense small
                     class="vue-draggable-handle">mdi-drag-horizontal-variant

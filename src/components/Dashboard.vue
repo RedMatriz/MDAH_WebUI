@@ -135,9 +135,9 @@
                                     >
                                         <v-btn
                                                 v-model="graph"
-                                               :style="{color: $store.getters.current.textColor}"
-                                               :color="$store.getters.current.accent1"
-                                               small>
+                                                :style="{color: $store.getters.current.textColor}"
+                                                :color="$store.getters.current.accent1"
+                                                small>
                                             Graph
                                         </v-btn>
                                         <v-btn :style="{color: $store.getters.current.textColor}"
@@ -522,10 +522,10 @@
                         </v-col>
                         <v-col cols="8" v-if="!$vuetify.breakpoint.mdAndDown">
                             <chart
-                                   :key="prevreload"
-                                   autoresize
-                                   style="width: 100%; left: 0"
-                                   :options="graph ? $store.getters.layout.tempoptions: $store.getters.layout.temppieoptions"
+                                    :key="prevreload"
+                                    autoresize
+                                    style="width: 100%; left: 0"
+                                    :options="graph ? $store.getters.layout.tempoptions: $store.getters.layout.temppieoptions"
                             />
                         </v-col>
                     </v-row>
@@ -539,15 +539,22 @@
                 </v-container>
             </modal>
         </div>
-        <v-btn @click="adddata">
-            add
-        </v-btn>
+<!--        <v-btn @click="adddata">-->
+<!--            add-->
+<!--        </v-btn>-->
     </v-container>
 </template>
 
 <script>
     import store from '../store/index';
-    import {dataUnits, numberUnits, formatNumber, constructChart, deconstructChart, addData} from "@/constants";
+    import {
+        dataUnits,
+        numberUnits,
+        formatNumber,
+        constructChart,
+        deconstructChart,
+        addData,
+    } from "@/constants";
     import moment from "moment";
     import DashGrid from "@/components/dashGrid";
     import Vue from 'vue'
@@ -893,16 +900,18 @@
                 this.prevreload = !this.prevreload
             },
             exportgraph: (a, t) => deconstructChart(a, t),
-            adddata: ()=> addData(),
+            adddata: () => addData(),
             log(a) {
                 console.log(a)
             }
         },
         computed: {
-            g() {return this.graph}
+            g() {
+                return this.graph
+            }
         },
-        watch:{
-            g(){
+        watch: {
+            g() {
                 this.prevreload = !this.prevreload
             }
         }

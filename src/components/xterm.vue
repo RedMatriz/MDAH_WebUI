@@ -26,7 +26,9 @@
                 disableStdin: false,
                 cursorBlink: true,
                 cursorStyle: 'underline',
-                fontSize: 15
+                fontSize: 15,
+                fastScrollModifier: 'shift',
+                fastScrollSensitivity: 5
             });
             this.term.loadAddon(this.fitaddon);
         },
@@ -58,9 +60,9 @@
                 } else if (message.includes('missed cache')) {
                     line = '\x1b[34m' //blue
                 }
-                // else if ()) {
-                //     line = '\x1b[32m' //green
-                // }
+                else if (message.includes('exception')) {//exception color
+                    line = '\x1b[31m' //red
+                }
                 else if (message.includes('succeeded') || message.includes('committed')) { //success color
                     line = '\x1b[1;32m' //bright green
                 } else if (message.includes('errored') || message.includes('failed') || message.includes('aborted')) { //fail color
@@ -86,11 +88,11 @@
                 this.term._initialized = true;
                 //https://xtermjs.org/docs/api/terminal/interfaces/itheme/
                 //colors ^
-                this.term.writeln('\x1b[1;32mWelcome to the Web UI console');
+                this.term.writeln('Welcome to the Web UI console');
                 this.term.writeln('Anti was super lazy and didnt bother to actually implement a console sync');
                 this.term.writeln('Go ping him (please don\'t) to do some more work and stop reading manga');
-                this.term.writeln('You\'re still free to type and spam in this console to your heart\'s content tho');
-                this.term.writeln('\x1b[0m');
+                // this.term.writeln('You\'re still free to type and spam in this console to your heart\'s content tho');
+                this.term.writeln('');
                 // this.prompt(this.term);
                 //
                 // this.term.onData(e => {

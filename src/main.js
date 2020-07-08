@@ -7,7 +7,8 @@ import './plugins/echarts';
 import VueTimers from 'vue-timers'
 import './registerServiceWorker'
 import VModal from 'vue-js-modal'
-import {constructChart, loadData, sortData} from "@/constants";
+// eslint-disable-next-line no-unused-vars
+import {constructChart, loadData, sortData, getCPSWOD} from "@/constants";
 import moment from "moment";
 import {OverlayScrollbarsComponent} from 'overlayscrollbars-vue';
 import 'overlayscrollbars/css/OverlayScrollbars.css';
@@ -23,7 +24,10 @@ Vue.config.productionTip = false;
 Vue.mixin({
     methods: {
         updateData: function () {
-            fetch("api/stats")
+            fetch("api/stats").catch(e=> {
+                console.warn('Response Error: ' + e);
+                return null
+            })
                 .then(response => response.json().catch(e => {
                     console.warn('Response Error: ' + e);
                     return null
@@ -36,18 +40,18 @@ Vue.mixin({
                     let key = Object.keys(response)[0]
                     let inst = response[key];
                     let time = new Date(moment(key));
-                    store.commit('pushDate', key)
-                    store.commit('pushHitsChange', [time, inst.cache_hits - store.getters.lastValueOf('hits')]);
+                    store.commit('pushDate', time)
+                    store.commit('pushHitsChange', [time, getCPSWOD(store.getters.lastValueOf('hits'), inst.cache_hits, store.getters.lastDataPairOf('hits')[0], time)]);
                     store.commit('pushHits', [time, inst.cache_hits]);
-                    store.commit('pushMissesChange', [time, inst.cache_misses - store.getters.lastValueOf('misses')]);
+                    store.commit('pushMissesChange', [time,getCPSWOD(store.getters.lastValueOf('misses'), inst.cache_hits, store.getters.lastDataPairOf('misses')[0], time)]);
                     store.commit('pushMisses', [time, inst.cache_misses]);
-                    store.commit('pushCachedChange', [time, inst.browser_cached - store.getters.lastValueOf('cached')]);
+                    store.commit('pushCachedChange', [time, getCPSWOD(store.getters.lastValueOf('cached'), inst.cache_hits, store.getters.lastDataPairOf('cached')[0], time)]);
                     store.commit('pushCached', [time, inst.browser_cached]);
-                    store.commit('pushBytesSentChange', [time, inst.bytes_sent - store.getters.lastValueOf('bytesSent')]);
+                    store.commit('pushBytesSentChange', [time, getCPSWOD(store.getters.lastValueOf('bytesSent'), inst.cache_hits, store.getters.lastDataPairOf('bytesSent')[0], time)]);
                     store.commit('pushBytesSent', [time, inst.bytes_sent]);
-                    store.commit('pushReqServChange', [time, inst.requests_served - store.getters.lastValueOf('reqServ')]);
+                    store.commit('pushReqServChange', [time, getCPSWOD(store.getters.lastValueOf('reqServ'), inst.cache_hits, store.getters.lastDataPairOf('reqServ')[0], time)]);
                     store.commit('pushReqServ', [time, inst.requests_served]);
-                    store.commit('pushSizeDiskChange', [time, inst.bytes_on_disk - store.getters.lastValueOf('sizeDisk')]);
+                    store.commit('pushSizeDiskChange', [time, getCPSWOD(store.getters.lastValueOf('sizeDisk'), inst.cache_hits, store.getters.lastDataPairOf('sizeDisk')[0], time)]);
                     store.commit('pushSizeDisk', [time, inst.bytes_on_disk]);
                 }).catch((err) => {
                 console.log(err);
@@ -96,7 +100,7 @@ if (localStorage.dashboardLayout) {
     store.commit('resetLayout');
 if (localStorage.refreshRate)
     store.commit('setRefresh', parseInt(localStorage.refreshRate))
-if(localStorage.consoleLines)
+if (localStorage.consoleLines)
     store.commit('setConsoleData', JSON.parse(localStorage.consoleLines))
 
 new Vue({

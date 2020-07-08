@@ -56,16 +56,16 @@ const state = {
         },
         midnight: {
             backgroundAlpha: 'f0',
-            backgroundColor: '#111',
-            textColor: '#dfdfdf',
-            primary: '#202020',
-            secondary: '#232323',
-            accent: '#a0a0a0',
+            backgroundColor: '#000',
+            textColor: '#d0d0d0',
+            primary: '#191919',
+            secondary: '#212122',
+            accent: '#9d9da0',
             accent1: 'rgba(255,255,255,0.3)',
-            accent2: 'rgba(95,95,95,0.7)',
-            green: '#00e000',
-            red: '#e00000',
-            yellow: '#e0e000',
+            accent2: 'rgba(95,95,100,0.7)',
+            green: '#00a000',
+            red: '#a00000',
+            yellow: '#a0a000',
             isDark: true,
         },
     },
@@ -84,7 +84,6 @@ const state = {
         cached: [],
         cachedChange: [],
         stats: [],
-        //TODO: add change/unit of time data
         updateInterval: 2000,
         maxStorePoints: 1801,
     },
@@ -101,11 +100,64 @@ const state = {
 };
 
 const defaultLayout = [
-    {x: 0, y: 0, w: 3, h: 8, i: 0},
-    {x: 3, y: 0, w: 9, h: 8, i: 1},
-    {x: 0, y: 8, w: 6, h: 8, i: 2},
-    {x: 6, y: 8, w: 6, h: 8, i: 3}];
+    {x: 0, y: 0, w: 24, h: 8, i: 0},
+    {x: 0, y: 8, w: 5, h: 8, i: 1},
+    {x: 5, y: 8, w: 11, h: 8, i: 2},
+    {x: 16, y: 8, w: 8, h: 8, i: 3}];
 const defaultCharts = [
+    {
+        type: 'graph',
+        title: {left: 'center', text: 'Requests'},
+        tooltip: {trigger: 'axis', axisPointer: {type: 'cross', label: {formatter: 'number'}}},
+        legend: {left: 'center', show: true, top: 35, data: ['Requests', 'Hits', 'Misses']},
+        yAxis: [{
+            type: 'value',
+            name: 'Req/s',
+            scale: true,
+            offset: 0,
+            axisLabel: {unit: 2},
+            splitLine: {show: false}
+        }, {
+            type: 'value',
+            name: 'Hits/s',
+            scale: true,
+            offset: 0,
+            axisLabel: {unit: 2},
+            splitLine: {show: false}
+        }, {
+            type: 'value',
+            name: 'Misses/s',
+            scale: true,
+            offset: 60,
+            axisLabel: {unit: 2},
+            splitLine: {show: false}
+        }],
+        series: [{
+            name: 'Requests',
+            type: 'line',
+            data: null,
+            dataId: 'Change in Requests Served',
+            yAxisIndex: 0,
+            showSymbol: false,
+            itemStyle: {colorId: 'text'}
+        }, {
+            name: 'Hits',
+            type: 'line',
+            data: null,
+            dataId: 'Change in Hits',
+            yAxisIndex: 1,
+            showSymbol: false,
+            itemStyle: {colorId: 'green'}
+        }, {
+            name: 'Misses',
+            type: 'line',
+            data: null,
+            dataId: 'Change in Misses',
+            yAxisIndex: 2,
+            showSymbol: false,
+            itemStyle: {colorId: 'red'}
+        }]
+    },
     {
         type: 'pie',
         title: {
@@ -115,6 +167,7 @@ const defaultCharts = [
         legend: {
             orient: 'vertical',
             left: 0,
+            top: 10,
             show: true,
             data: ['Hits', 'Misses', 'Cached'],
         },
@@ -168,7 +221,7 @@ const defaultCharts = [
         },
         legend: {
             left: 'center',
-            top: 22,
+            top: 35,
             data: ['Total', 'Change'],
         },
         yAxis: [{
@@ -210,66 +263,68 @@ const defaultCharts = [
                 colorId: 'yellow'
             },
         }]
-    }, {
-        type: 'graph',
-        title: {
-            left: 'center',
-            text: 'Requests Served',
-        },
-        tooltip: {
-            trigger: 'axis',
-            axisPointer: {
-                type: 'cross',
-                label: {
-                    formatter: 'number'
-                },
-            }
-        },
-        legend: {
-            left: 'center',
-            top: 22,
-            data: ['Total', 'Change'],
-        },
-        yAxis: [{
-            type: 'value',
-            name: 'Total',
-            scale: true,
-            axisLabel: {
-                unit: 2
-            },
-            splitLine: {
-                show: false
-            }
-        }, {
-            type: 'value',
-            name: 'Change',
-            scale: true,
-            axisLabel: {
-                unit: 2
-            },
-            splitLine: {
-                show: false
-            }
-        }],
-        series: [{
-            name: 'Total',
-            dataId: 'Requests Served',
-            type: 'line',
-            sampling: 'average',
-            showSymbol: false,
-            itemStyle: {
-                colorId: 'text'
-            },
-        }, {
-            name: 'Change',
-            dataId: 'Change in Requests Served',
-            yAxisIndex: 1,
-            type: 'bar',
-            itemStyle: {
-                colorId: 'yellow'
-            },
-        }]
-    }, {
+    },
+    // {
+    //     type: 'graph',
+    //     title: {
+    //         left: 'center',
+    //         text: 'Requests Served',
+    //     },
+    //     tooltip: {
+    //         trigger: 'axis',
+    //         axisPointer: {
+    //             type: 'cross',
+    //             label: {
+    //                 formatter: 'number'
+    //             },
+    //         }
+    //     },
+    //     legend: {
+    //         left: 'center',
+    //         top: 22,
+    //         data: ['Total', 'Change'],
+    //     },
+    //     yAxis: [{
+    //         type: 'value',
+    //         name: 'Total',
+    //         scale: true,
+    //         axisLabel: {
+    //             unit: 2
+    //         },
+    //         splitLine: {
+    //             show: false
+    //         }
+    //     }, {
+    //         type: 'value',
+    //         name: 'Change',
+    //         scale: true,
+    //         axisLabel: {
+    //             unit: 2
+    //         },
+    //         splitLine: {
+    //             show: false
+    //         }
+    //     }],
+    //     series: [{
+    //         name: 'Total',
+    //         dataId: 'Requests Served',
+    //         type: 'line',
+    //         sampling: 'average',
+    //         showSymbol: false,
+    //         itemStyle: {
+    //             colorId: 'text'
+    //         },
+    //     }, {
+    //         name: 'Change',
+    //         dataId: 'Change in Requests Served',
+    //         yAxisIndex: 1,
+    //         type: 'bar',
+    //         itemStyle: {
+    //             colorId: 'yellow'
+    //         },
+    //     }]
+    // },
+    {
         type: 'graph',
         title: {
             left: 'center',
@@ -286,7 +341,7 @@ const defaultCharts = [
         },
         legend: {
             left: 'center',
-            top: 22,
+            top: 35,
             data: ['Total', 'Change'],
         },
         yAxis: [{
@@ -343,7 +398,8 @@ const getters = {
     data: state => state.data,
     layout: state => state.layout,
     console: state => state.console,
-    lastValueOf: (state) => (dataset) => state.data[dataset][state.data[dataset].length - 1] ? state.data[dataset][state.data[dataset].length - 1][1] : 0
+    lastValueOf: (state) => (dataset) => state.data[dataset][state.data[dataset].length - 1] ? state.data[dataset][state.data[dataset].length - 1][1] : 0,
+    lastDataPairOf: (state) => (dataset) => state.data[dataset] ? state.data[dataset][state.data[dataset].length - 1] : null
 };
 
 const mutations = {

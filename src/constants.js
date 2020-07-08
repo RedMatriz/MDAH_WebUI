@@ -3,15 +3,14 @@ import moment from "moment";
 
 export const dataUnits = ['YB', 'ZB', 'EB', 'PB', 'TB', 'GB', 'MB', 'KB', 'B']
 export const numberUnits = ['d', 'n', 'o', 'S', 's', 'Q', 'q', 't', 'B', 'M', 'K', '']
-export const formatNumber = (value, units, float) => {
-    let fix = float ? float : 2
+export const formatNumber = (value, units, flot) => {
     let num = parseFloat(value);
     for (let i = 0; i < units.length; i++) {
         let div = Math.pow(10, (units.length - i - 1) * 3);
         if (num >= div)
-            return (num / div).toFixed(fix).replace(/\.?0*$/, '') + units[i]
+            return float(num / div, flot) + units[i]
     }
-    return num.toFixed(fix).replace(/\.?0*$/, '')
+    return float(num, flot)
 }
 const units = [[], dataUnits, numberUnits]
 
@@ -21,9 +20,12 @@ export const constructChart = (storedConfig) => {
         temp.title.textStyle = {
             color: store.getters.current.textColor
         }
+        temp.title.top = 10
         temp.toolbox = {
             orient: 'vertical',
-            top: 30,
+            top: 20,
+            right: 0,
+            width: 5,
             iconStyle: {
                 color: store.getters.current.accent,
                 borderColor: '#00000000'
@@ -31,7 +33,8 @@ export const constructChart = (storedConfig) => {
             emphasis: {
                 iconStyle: {
                     textPosition: 'left',
-                    color: store.getters.current.accent2,
+                    color: store.getters.current.textColor,
+                    textBackgroundColor: store.getters.current.secondary,
                     borderColor: '#00000000'
                 }
             },
@@ -54,9 +57,13 @@ export const constructChart = (storedConfig) => {
                 }
             }
         }
+        let offadd = 0
+        temp.yAxis.forEach((x) => {
+            offadd += x.offset ? x.offset : 0
+        })
         temp.grid = {
-            right: 40 + Math.max(0, storedConfig.yAxis.length - 2) * 80,
-            left: 40,
+            right: 30 + offadd,
+            left: 30,
             bottom: 40,
             top: 60,
             containLabel: true,
@@ -101,8 +108,9 @@ export const constructChart = (storedConfig) => {
             }
         };
         temp.tooltip.axisPointer.label.formatter = (point) => {
-            if (point.axisDimension === 'x' && point.seriesData[0] && point.seriesData[0].data){
-                return moment(point.seriesData[0].data[0]).format('MMM D, h:mm:ssa')}
+            if (point.axisDimension === 'x' && point.seriesData[0] && point.seriesData[0].data) {
+                return moment(point.seriesData[0].data[0]).format('MMM D, h:mm:ssa')
+            }
             return formatNumber(point.value, units[temp.yAxis[point.axisIndex].axisLabel.unit], 4)
         }
         temp.dataZoom = [{
@@ -206,6 +214,7 @@ export const constructChart = (storedConfig) => {
         temp.title.textStyle = {
             color: store.getters.current.textColor
         }
+        temp.title.top = 10
         temp.legend.inactiveColor = store.getters.current.accent2;
         temp.legend.textStyle = {color: store.getters.current.textColor};
         temp.tooltip = {
@@ -381,31 +390,72 @@ export const deconstructChart = (config, type) => {
     }
 }
 
+export const getCPSWOD = (prevvalue, curvalue, prevtime, curtime) => {
+    return float(((curvalue - prevvalue) / (Math.abs(moment(curtime) - moment(prevtime))) * 1000), 4) // x1000 for seconds
+}
+
 export const loadData = () => {
     for (let i = 0; i < store.getters.data.stats.length; i++) {
         let key = Object.keys(store.getters.data.stats[i])[0]
         let inst = store.getters.data.stats[i][key];
-        let hist = i > 0 ? store.getters.data.stats[i - 1][Object.keys(store.getters.data.stats[i - 1])[0]] : null;
+        let histkey = i > 0 ? Object.keys(store.getters.data.stats[i - 1])[0] : null;
+        let hist = i > 0 ? store.getters.data.stats[i - 1][histkey] : null;
         let time = new Date(moment(key));
+        if (moment(histkey) - moment(key) > store.getters.data.updateInterval * 1000) {
+            let lastupdatetime = moment(histkey)
+            let fillpoints = Math.floor((moment(key) - moment(histkey)) / (store.getters.data.updateInterval * 1000))
+            let fillhits = (inst.cache_hits - store.getters.lastValueOf('hits')) / (fillpoints)
+            let fillmisses = (inst.cache_misses - store.getters.lastValueOf('misses')) / (fillpoints)
+            let fillcached = (inst.browser_cached - store.getters.lastValueOf('cached')) / (fillpoints)
+            let fillsent = (inst.bytes_sent - store.getters.lastValueOf('bytesSent')) / (fillpoints)
+            let fillreq = (inst.requests_served - store.getters.lastValueOf('reqServ') - inst.requests_served) / (fillpoints)
+            let fillsize = (inst.bytes_on_disk - store.getters.lastValueOf('sizeDisk') - inst.bytes_on_disk) / (fillpoints)
+            while (moment(histkey) - lastupdatetime > store.getters.data.updateInterval * 1000) {
+                lastupdatetime.add(store.getters.data.updateInterval, 's')
+                let filltime = new Date(lastupdatetime)
+                store.commit('pushStats', JSON.parse('{"' + filltime.toISOString() + '": ' + JSON.stringify({
+                    cache_hits: -fillhits * Math.floor((moment(key) - lastupdatetime) / (store.getters.data.updateInterval * 1000)),
+                    cache_misses: -fillmisses * Math.floor((moment(key) - lastupdatetime) / (store.getters.data.updateInterval * 1000)),
+                    browser_cached: -fillcached * Math.floor((moment(key) - lastupdatetime) / (store.getters.data.updateInterval * 1000)),
+                    bytes_sent: -fillsent * Math.floor((moment(key) - lastupdatetime) / (store.getters.data.updateInterval * 1000)),
+                    requests_served: -fillreq * Math.floor((moment(key) - lastupdatetime) / (store.getters.data.updateInterval * 1000)),
+                    bytes_on_disk: -fillsize * Math.floor((moment(key) - lastupdatetime) / (store.getters.data.updateInterval * 1000)),
+                }) + '}'));
+                store.commit('pushHits', [filltime, (-fillhits * Math.floor((moment(key) - lastupdatetime) / (store.getters.data.updateInterval * 1000))).toFixed(0)]);
+                store.commit('pushHitsChange', [filltime, fillhits / 1000]);
+                store.commit('pushMisses', [filltime, (-fillmisses * Math.floor((moment(key) - lastupdatetime) / (store.getters.data.updateInterval * 1000))).toFixed(0)]);
+                store.commit('pushMissesChange', [filltime, fillmisses / 1000]);
+                store.commit('pushCached', [filltime, (-fillcached * Math.floor((moment(key) - lastupdatetime) / (store.getters.data.updateInterval * 1000))).toFixed(0)]);
+                store.commit('pushCachedChange', [filltime, fillcached / 1000]);
+                store.commit('pushBytesSent', [filltime, (-fillsent * Math.floor((moment(key) - lastupdatetime) / (store.getters.data.updateInterval * 1000))).toFixed(0)]);
+                store.commit('pushBytesSentChange', [filltime, fillsent / 1000]);
+                store.commit('pushReqServ', [filltime, (-fillreq * Math.floor((moment(key) - lastupdatetime) / (store.getters.data.updateInterval * 1000))).toFixed(0)]);
+                store.commit('pushReqServChange', [filltime, fillreq / 1000]);
+                store.commit('pushSizeDisk', [filltime, (-fillsize * Math.floor((moment(key) - lastupdatetime) / (store.getters.data.updateInterval * 1000))).toFixed(0)]);
+                store.commit('pushSizeDiskChange', [filltime, fillsize / 1000]);
+            }
+            localStorage.stats = JSON.stringify(store.getters.data.stats);
+        }
         store.commit('pushDate', key)
         store.commit('pushHits', [time, inst.cache_hits]);
-        store.commit('pushHitsChange', [time, hist ? inst.cache_hits - hist.cache_hits : 0]);
+        store.commit('pushHitsChange', [time, hist ? getCPSWOD(hist.cache_hits, inst.cache_hits, histkey, key) : 0]);
         store.commit('pushMisses', [time, inst.cache_misses]);
-        store.commit('pushMissesChange', [time, hist ? inst.cache_misses - hist.cache_misses : 0]);
+        store.commit('pushMissesChange', [time, hist ? getCPSWOD(hist.cache_misses, inst.cache_misses, histkey, key) : 0]);
         store.commit('pushCached', [time, inst.browser_cached]);
-        store.commit('pushCachedChange', [time, hist ? inst.browser_cached - hist.browser_cached : 0]);
+        store.commit('pushCachedChange', [time, hist ? getCPSWOD(hist.browser_cached, inst.browser_cached, histkey, key) : 0]);
         store.commit('pushBytesSent', [time, inst.bytes_sent]);
-        store.commit('pushBytesSentChange', [time, hist ? inst.bytes_sent - hist.bytes_sent : 0]);
+        store.commit('pushBytesSentChange', [time, hist ? getCPSWOD(hist.bytes_sent, inst.bytes_sent, histkey, key) : 0]);
         store.commit('pushReqServ', [time, inst.requests_served]);
-        store.commit('pushReqServChange', [time, hist ? inst.requests_served - hist.requests_served : 0]);
+        store.commit('pushReqServChange', [time, hist ? getCPSWOD(hist.requests_served, inst.requests_served, histkey, key) : 0]);
         store.commit('pushSizeDisk', [time, inst.bytes_on_disk]);
-        store.commit('pushSizeDiskChange', [time, hist ? inst.bytes_on_disk - hist.bytes_on_disk : 0]);
+        store.commit('pushSizeDiskChange', [time, hist ? getCPSWOD(hist.bytes_on_disk, inst.bytes_on_disk, histkey, key) : 0]);
     }
 }
 
 export const sortData = () => {
     let stats = store.getters.data.stats;
     store.commit('setStats', quickSort(stats));
+
     // localStorage.stats = JSON.stringify(store.getters.data.stats);
 
     function quickSort(origArray) {
@@ -426,6 +476,7 @@ export const sortData = () => {
             return [].concat(quickSort(left), pivot, quickSort(right));
         }
     }
+
     // if (stats.length >= 1)
     //     for (let i = 1; i < stats.length; i++) {
     //         if (Object.keys(stats[i])[0] === Object.keys(stats[i - 1])[0]) {
@@ -435,36 +486,79 @@ export const sortData = () => {
     //     }
 }
 
-export const interpData = () =>{
-    // eslint-disable-next-line no-unused-vars
-    let stats = store.getters.data.stats;
-    // eslint-disable-next-line no-unused-vars
-    let updaterate = store.getters.data.updateInterval;
-    //TODO: complete function
-}
-
 export const addData = () => {
     let inst = {
-        cache_hits: Math.floor(Math.random()*100),
-        cache_misses:  Math.floor(Math.random()*100),
-        browser_cached:  Math.floor(Math.random()*100),
-        bytes_sent:  Math.floor(Math.random()*100),
-        requests_served:  Math.floor(Math.random()*100),
-        bytes_on_disk:  Math.floor(Math.random()*100),
+        cache_hits: Math.floor(Math.random() * 100),
+        cache_misses: Math.floor(Math.random() * 100),
+        browser_cached: Math.floor(Math.random() * 100),
+        bytes_sent: Math.floor(Math.random() * 100),
+        requests_served: Math.floor(Math.random() * 100),
+        bytes_on_disk: Math.floor(Math.random() * 100),
     }
     let ti = new Date().toISOString()
-    let time = new Date(moment(ti))
+    let momtime = moment(ti)
+    let time = new Date(momtime)
+    let lastupdatetime = moment(store.getters.lastDataPairOf('date'))
+    if (momtime - lastupdatetime > store.getters.data.updateInterval * 1000) {
+        let fillpoints = Math.floor((momtime - lastupdatetime) / (store.getters.data.updateInterval * 1000))
+        let fillhits = (inst.cache_hits - store.getters.lastValueOf('hits')) / (fillpoints)
+        let fillmisses = (inst.cache_misses - store.getters.lastValueOf('misses')) / (fillpoints)
+        let fillcached = (inst.browser_cached - store.getters.lastValueOf('cached')) / (fillpoints)
+        let fillsent = (inst.bytes_sent - store.getters.lastValueOf('bytesSent')) / (fillpoints)
+        let fillreq = (inst.requests_served - store.getters.lastValueOf('reqServ') - inst.requests_served) / (fillpoints)
+        let fillsize = (inst.bytes_on_disk - store.getters.lastValueOf('sizeDisk') - inst.bytes_on_disk) / (fillpoints)
+        while (momtime - lastupdatetime > store.getters.data.updateInterval * 1000) {
+            lastupdatetime.add(store.getters.data.updateInterval, 's')
+            let filltime = new Date(lastupdatetime)
+            store.commit('pushStats', JSON.parse('{"' + filltime.toISOString() + '": ' + JSON.stringify({
+                cache_hits: -fillhits * Math.floor((momtime - lastupdatetime) / (store.getters.data.updateInterval * 1000)),
+                cache_misses: -fillmisses * Math.floor((momtime - lastupdatetime) / (store.getters.data.updateInterval * 1000)),
+                browser_cached: -fillcached * Math.floor((momtime - lastupdatetime) / (store.getters.data.updateInterval * 1000)),
+                bytes_sent: -fillsent * Math.floor((momtime - lastupdatetime) / (store.getters.data.updateInterval * 1000)),
+                requests_served: -fillreq * Math.floor((momtime - lastupdatetime) / (store.getters.data.updateInterval * 1000)),
+                bytes_on_disk: -fillsize * Math.floor((momtime - lastupdatetime) / (store.getters.data.updateInterval * 1000)),
+            }) + '}'));
+            store.commit('pushDate', filltime.toISOString())
+            store.commit('pushHits', [filltime, (-fillhits * Math.floor((momtime - lastupdatetime) / (store.getters.data.updateInterval * 1000))).toFixed(0)]);
+            store.commit('pushHitsChange', [filltime, fillhits / 1000]);
+            store.commit('pushMisses', [filltime, (-fillmisses * Math.floor((momtime - lastupdatetime) / (store.getters.data.updateInterval * 1000))).toFixed(0)]);
+            store.commit('pushMissesChange', [filltime, fillmisses / 1000]);
+            store.commit('pushCached', [filltime, (-fillcached * Math.floor((momtime - lastupdatetime) / (store.getters.data.updateInterval * 1000))).toFixed(0)]);
+            store.commit('pushCachedChange', [filltime, fillcached / 1000]);
+            store.commit('pushBytesSent', [filltime, (-fillsent * Math.floor((momtime - lastupdatetime) / (store.getters.data.updateInterval * 1000))).toFixed(0)]);
+            store.commit('pushBytesSentChange', [filltime, fillsent / 1000]);
+            store.commit('pushReqServ', [filltime, (-fillreq * Math.floor((momtime - lastupdatetime) / (store.getters.data.updateInterval * 1000))).toFixed(0)]);
+            store.commit('pushReqServChange', [filltime, fillreq / 1000]);
+            store.commit('pushSizeDisk', [filltime, (-fillsize * Math.floor((momtime - lastupdatetime) / (store.getters.data.updateInterval * 1000))).toFixed(0)]);
+            store.commit('pushSizeDiskChange', [filltime, fillsize / 1000]);
+        }
+        localStorage.stats = JSON.stringify(store.getters.data.stats);
+    }
     store.commit('pushDate', time)
-    store.commit('pushHitsChange', [time, inst.cache_hits - store.getters.lastValueOf('hits')]);
+    store.commit('pushHitsChange', [time, getCPSWOD(store.getters.lastValueOf('hits'), inst.cache_hits, store.getters.lastDataPairOf('hits')[0], time)]);
     store.commit('pushHits', [time, inst.cache_hits]);
-    store.commit('pushMissesChange', [time, inst.cache_misses - store.getters.lastValueOf('misses')]);
+    store.commit('pushMissesChange', [time, getCPSWOD(store.getters.lastValueOf('misses'), inst.cache_hits, store.getters.lastDataPairOf('misses')[0], time)]);
     store.commit('pushMisses', [time, inst.cache_misses]);
-    store.commit('pushCachedChange', [time, inst.browser_cached - store.getters.lastValueOf('cached')]);
+    store.commit('pushCachedChange', [time, getCPSWOD(store.getters.lastValueOf('cached'), inst.cache_hits, store.getters.lastDataPairOf('cached')[0], time)]);
     store.commit('pushCached', [time, inst.browser_cached]);
-    store.commit('pushBytesSentChange', [time, inst.bytes_sent - store.getters.lastValueOf('bytesSent')]);
+    store.commit('pushBytesSentChange', [time, getCPSWOD(store.getters.lastValueOf('bytesSent'), inst.cache_hits, store.getters.lastDataPairOf('bytesSent')[0], time)]);
     store.commit('pushBytesSent', [time, inst.bytes_sent]);
-    store.commit('pushReqServChange', [time, inst.requests_served - store.getters.lastValueOf('reqServ')]);
+    store.commit('pushReqServChange', [time, getCPSWOD(store.getters.lastValueOf('reqServ'), inst.cache_hits, store.getters.lastDataPairOf('reqServ')[0], time)]);
     store.commit('pushReqServ', [time, inst.requests_served]);
-    store.commit('pushSizeDiskChange', [time, inst.bytes_on_disk - store.getters.lastValueOf('sizeDisk')]);
+    store.commit('pushSizeDiskChange', [time, getCPSWOD(store.getters.lastValueOf('sizeDisk'), inst.cache_hits, store.getters.lastDataPairOf('sizeDisk')[0], time)]);
     store.commit('pushSizeDisk', [time, inst.bytes_on_disk]);
 }
+
+export const getCPS = (dataset, now, nowset) => {
+    return store.getters.lastDataPairOf(dataset) ?
+        (nowset.cache_hits - store.getters.lastDataPairOf(dataset)[1]) /
+        (moment(now) - moment(store.getters.lastDataPairOf(dataset)[0])) * 1000
+        : 0
+}
+
+export const float = (number, x) => {
+    return number.toFixed(x ? x : 2).replace(/\.?0*$/, '')
+}
+
+
+
