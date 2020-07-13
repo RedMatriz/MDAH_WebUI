@@ -58,6 +58,7 @@
                         />
                 </v-col>
             </v-row>
+            <v-expand-transition>
             <v-row dense v-if="hasBgImage">
                 <v-col cols="4" v-if="!$vuetify.breakpoint.mdAndDown" class="pt-0 pb-0">
                     <v-subheader :style="{color: $store.getters.current.textColor}" class="pt-5">Image URL
@@ -72,6 +73,7 @@
                     />
                 </v-col>
             </v-row>
+            </v-expand-transition>
             <v-row dense>
                 <v-col cols="4" v-if="!$vuetify.breakpoint.mdAndDown" class="pt-0 pb-0">
                     <v-subheader :style="{color: $store.getters.current.textColor}" class="pt-3">Dashboard

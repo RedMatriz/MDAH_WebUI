@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-import {deconstructChart, constructChart} from "@/constants";
+import {deconstructChart, constructChart, float} from "@/constants";
+import moment from "moment";
 
 Vue.use(Vuex);
 
@@ -70,19 +71,7 @@ const state = {
         },
     },
     data: {
-        date: [],
-        bytesSent: [],
-        bytesSentChange: [],
-        sizeDisk: [],
-        sizeDiskChange: [],
-        reqServ: [],
-        reqServChange: [],
-        hits: [],
-        hitsChange: [],
-        misses: [],
-        missesChange: [],
-        cached: [],
-        cachedChange: [],
+        datasets: {},
         stats: [],
         updateInterval: 2000,
         maxStorePoints: 1801,
@@ -112,23 +101,9 @@ const defaultCharts = [
         legend: {left: 'center', show: true, top: 35, data: ['Requests', 'Hits', 'Misses']},
         yAxis: [{
             type: 'value',
-            name: 'Req/s',
+            name: 'Change/s',
             scale: true,
             offset: 0,
-            axisLabel: {unit: 2},
-            splitLine: {show: false}
-        }, {
-            type: 'value',
-            name: 'Hits/s',
-            scale: true,
-            offset: 0,
-            axisLabel: {unit: 2},
-            splitLine: {show: false}
-        }, {
-            type: 'value',
-            name: 'Misses/s',
-            scale: true,
-            offset: 60,
             axisLabel: {unit: 2},
             splitLine: {show: false}
         }],
@@ -145,7 +120,7 @@ const defaultCharts = [
             type: 'line',
             data: null,
             dataId: 'Change in Hits',
-            yAxisIndex: 1,
+            yAxisIndex: 0,
             showSymbol: false,
             itemStyle: {colorId: 'green'}
         }, {
@@ -153,7 +128,7 @@ const defaultCharts = [
             type: 'line',
             data: null,
             dataId: 'Change in Misses',
-            yAxisIndex: 2,
+            yAxisIndex: 0,
             showSymbol: false,
             itemStyle: {colorId: 'red'}
         }]
@@ -236,7 +211,7 @@ const defaultCharts = [
             }
         }, {
             type: 'value',
-            name: 'Change',
+            name: 'Change/s',
             scale: true,
             axisLabel: {
                 unit: 1
@@ -258,7 +233,8 @@ const defaultCharts = [
             name: 'Change',
             dataId: 'Change in Bytes Sent',
             yAxisIndex: 1,
-            type: 'bar',
+            type: 'line',
+            showSymbol: false,
             itemStyle: {
                 colorId: 'yellow'
             },
@@ -356,7 +332,7 @@ const defaultCharts = [
             }
         }, {
             type: 'value',
-            name: 'Change',
+            name: 'Change/s',
             scale: true,
             axisLabel: {
                 unit: 1
@@ -367,7 +343,7 @@ const defaultCharts = [
         }],
         series: [{
             name: 'Total',
-            dataId: 'Bytes On Disk',
+            dataId: 'Cache Size',
             type: 'line',
             sampling: 'average',
             showSymbol: false,
@@ -376,9 +352,10 @@ const defaultCharts = [
             },
         }, {
             name: 'Change',
-            dataId: 'Change in Bytes On Disk',
+            dataId: 'Change in Cache Size',
             yAxisIndex: 1,
-            type: 'bar',
+            type: 'line',
+            showSymbol: false,
             itemStyle: {
                 colorId: 'yellow'
             },
@@ -396,10 +373,12 @@ const getters = {
         return (state.options.hasBgImage ? state.themes[state.options.current].backgroundAlpha : '')
     },
     data: state => state.data,
+    getDataset: state => dataset => state.data.datasets[dataset],
+    getLastValueOfDataset: state => dataset => state.data.datasets[dataset] ?
+        (state.data.datasets[dataset][state.data.datasets[dataset].length - 1] ?
+            state.data.datasets[dataset][state.data.datasets[dataset].length - 1][1] : 0) : 0,
     layout: state => state.layout,
     console: state => state.console,
-    lastValueOf: (state) => (dataset) => state.data[dataset][state.data[dataset].length - 1] ? state.data[dataset][state.data[dataset].length - 1][1] : 0,
-    lastDataPairOf: (state) => (dataset) => state.data[dataset] ? state.data[dataset][state.data[dataset].length - 1] : null
 };
 
 const mutations = {
@@ -413,88 +392,44 @@ const mutations = {
     setStats(state, val) {
         state.data.stats = val;
     },
+    setDatasets(state, val) {
+        state.data.datasets = val
+    },
+    updateDatasets(state, val) {
+        // val should be a stat object
+        let stat = JSON.parse(val)
+        let datasets = state.data.datasets
+        // dataset keys
+        let timestamp = Object.keys(stat)[0]
+        let statKeys = Object.keys(stat[timestamp])
+        let timeDate = new Date(moment(timestamp) + 0)
+        statKeys.forEach((x) => {
+            if (!datasets[x]) {
+                datasets[x] = []
+                datasets[x + '_c'] = []
+            }
+            let lastPair = datasets[x].length > 0 ? datasets[x][datasets[x].length - 1] : null
+            datasets[x].push([timeDate, stat[timestamp][x]])
+            if (lastPair != null) // calculation of change / second
+                datasets[x + '_c'].push([timeDate, float((stat[timestamp][x] - lastPair[1]) / (moment(timestamp) - moment(lastPair[0])) * 1000, 4)])
+            else
+                datasets[x + '_c'].push([timeDate, 0])
+            if (datasets[x].length > state.data.maxStorePoints) {
+                datasets[x].shift()
+                datasets[x + '_c'].shift()
+            }
+        })
+    },
     pushStats(state, val) {
         state.data.stats.push(val);
         if (state.data.stats.length > state.data.maxStorePoints) {
             state.data.stats.splice(0, state.data.stats.length - state.data.maxStorePoints)
         }
     },
-    pushDate(state, val) {
-        state.data.date.push(val);
-        if (state.data.date.length > state.data.maxStorePoints) {
-            state.data.date.splice(0, state.data.date.length - state.data.maxStorePoints)
-        }
-    },
-    pushBytesSent(state, val) {
-        state.data.bytesSent.push(val);
-        while (state.data.bytesSent.length > state.data.maxStorePoints) {
-            state.data.bytesSent.shift()
-        }
-    },
-    pushBytesSentChange(state, val) {
-        state.data.bytesSentChange.push(val);
-        while (state.data.bytesSentChange.length > state.data.maxStorePoints) {
-            state.data.bytesSentChange.shift()
-        }
-    },
-    pushReqServ(state, val) {
-        state.data.reqServ.push(val);
-        while (state.data.reqServ.length > state.data.maxStorePoints) {
-            state.data.reqServ.shift()
-        }
-    },
-    pushReqServChange(state, val) {
-        state.data.reqServChange.push(val);
-        while (state.data.reqServChange.length > state.data.maxStorePoints) {
-            state.data.reqServChange.shift()
-        }
-    },
-    pushSizeDisk(state, val) {
-        state.data.sizeDisk.push(val);
-        while (state.data.sizeDisk.length > state.data.maxStorePoints) {
-            state.data.sizeDisk.shift()
-        }
-    },
-    pushSizeDiskChange(state, val) {
-        state.data.sizeDiskChange.push(val);
-        while (state.data.sizeDiskChange.length > state.data.maxStorePoints) {
-            state.data.sizeDiskChange.shift()
-        }
-    },
-    pushHits(state, val) {
-        state.data.hits.push(val);
-        while (state.data.hits.length > state.data.maxStorePoints) {
-            state.data.hits.shift()
-        }
-    },
-    pushHitsChange(state, val) {
-        state.data.hitsChange.push(val);
-        while (state.data.hitsChange.length > state.data.maxStorePoints) {
-            state.data.hitsChange.shift()
-        }
-    },
-    pushMisses(state, val) {
-        state.data.misses.push(val);
-        while (state.data.misses.length > state.data.maxStorePoints) {
-            state.data.misses.shift()
-        }
-    },
-    pushMissesChange(state, val) {
-        state.data.missesChange.push(val);
-        while (state.data.missesChange.length > state.data.maxStorePoints) {
-            state.data.missesChange.shift()
-        }
-    },
-    pushCached(state, val) {
-        state.data.cached.push(val);
-        while (state.data.cached.length > state.data.maxStorePoints) {
-            state.data.cached.shift()
-        }
-    },
-    pushCachedChange(state, val) {
-        state.data.cachedChange.push(val);
-        while (state.data.cachedChange.length > state.data.maxStorePoints) {
-            state.data.cachedChange.shift()
+    spliceStats(state, val) {
+        state.data.stats.splice(val[0], 0, val[1]);
+        if (state.data.stats.length > state.data.maxStorePoints) {
+            state.data.stats.splice(0, state.data.stats.length - state.data.maxStorePoints)
         }
     },
     resetStats(state) {
@@ -556,7 +491,6 @@ const mutations = {
                 id = i
                 break
             }
-        console.log(id)
         store.layout.grid.push({x: 0, y: 0, w: 8, h: 8, i: id})
         store.layout.charts.push(val)
         localStorage.dashboardCharts = JSON.stringify(store.layout.charts.map((x) => deconstructChart(x, x.type)))

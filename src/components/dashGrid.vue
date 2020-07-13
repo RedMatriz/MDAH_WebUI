@@ -21,7 +21,6 @@
                    drag-ignore-from=".no-drag"
                    @move="moved"
                    @resize="resized"
-
         >
             <chart
                     class="no-drag"
@@ -29,19 +28,32 @@
                     autoresize
                     :options="store.getters.layout.charts[getIndex(item.i)]"
             />
-            <v-icon :style="{position: 'absolute', color: store.getters.current.accent, left: 'calc(50% - 5px)', width: '10px'}"
-                    dense small
-                    class="vue-draggable-handle">mdi-drag-horizontal-variant
-            </v-icon>
-            <v-icon :style="{position: 'absolute', color: store.getters.current.accent, bottom: '2px', right: '2px'}"
-                    dense small
-            >mdi-resize-bottom-right
-            </v-icon>
-            <v-icon :style="{position: 'absolute', color: store.getters.current.accent, top: '2px', right: '2px'}"
-                    dense small
-                    @click="store.commit('removeLayoutContainer', index)"
-            >mdi-close
-            </v-icon>
+            <v-fade-transition>
+                <v-hover v-slot:default="{ hover }">
+                    <v-icon :style="{position: 'absolute', color: hover ? store.getters.current.textColor : store.getters.current.accent, left: 'calc(50% - 5px)', width: '10px'}"
+                            dense small
+                            class="vue-draggable-handle">mdi-drag-horizontal-variant
+                    </v-icon>
+                </v-hover>
+            </v-fade-transition>
+            <v-fade-transition>
+                <v-hover v-slot:default="{ hover }">
+                    <v-icon :style="{position: 'absolute', color: hover ? store.getters.current.textColor : store.getters.current.accent, top: '2px', right: '2px'}"
+                            dense small
+                            @click="store.commit('removeLayoutContainer', index)"
+                    >mdi-close
+                    </v-icon>
+                </v-hover>
+            </v-fade-transition>
+            <v-fade-transition>
+                <v-hover v-slot:default="{ hover }">
+                    <v-icon :style="{position: 'absolute', color: hover ? store.getters.current.textColor : store.getters.current.accent, bottom: '2px', right: '2px', zIndex: 1}"
+                            dense small
+                            class="vue-resizable-handle pa-0"
+                    >mdi-resize-bottom-right
+                    </v-icon>
+                </v-hover>
+            </v-fade-transition>
         </grid-item>
     </grid-layout>
 </template>
@@ -49,6 +61,7 @@
 <script>
     import store from "@/store";
     import vuetify from "@/plugins/vuetify";
+    import {translate} from "@/constants";
 
     export default {
         name: "dashGrid",
@@ -78,7 +91,7 @@
         },
         computed: {
             update() {
-                return store.getters.data.date;
+                return store.getters.data.stats;
             }
         },
         watch: {
@@ -86,44 +99,8 @@
                 store.getters.layout.charts.forEach((x) => {
                     if (x.type === 'pie') {
                         x.series[0].data.forEach((x) => {
-                            switch (x.dataId) {
-                                case 'Hits':
-                                    x.value = store.getters.lastValueOf('hits')
-                                    break
-                                case 'Misses':
-                                    x.value = store.getters.lastValueOf('misses')
-                                    break
-                                case 'Browser Cached':
-                                    x.value = store.getters.lastValueOf('cached')
-                                    break
-                                case 'Requests Served':
-                                    x.value = store.getters.lastValueOf('reqServ')
-                                    break
-                                case 'Bytes Sent':
-                                    x.value = store.getters.lastValueOf('bytesSent')
-                                    break
-                                case 'Bytes On Disk':
-                                    x.value = store.getters.lastValueOf('sizeDisk')
-                                    break
-                                case 'Change in Hits':
-                                    x.value = store.getters.lastValueOf('hitsChange')
-                                    break
-                                case 'Change in Misses':
-                                    x.value = store.getters.lastValueOf('missesChange')
-                                    break
-                                case 'Change in Browser Cached':
-                                    x.value = store.getters.lastValueOf('cachedChange')
-                                    break
-                                case 'Change in Requests Served':
-                                    x.value = store.getters.lastValueOf('reqServChange')
-                                    break
-                                case 'Change in Bytes Sent':
-                                    x.value = store.getters.lastValueOf('bytesSentChange')
-                                    break
-                                case 'Change in Bytes On Disk':
-                                    x.value = store.getters.lastValueOf('sizeDiskChange')
-                                    break
-                            }
+                            if (x.dataId)
+                                x.value = store.getters.getLastValueOfDataset(translate(x.dataId, true))
                         })
                     }
                 })

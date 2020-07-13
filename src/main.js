@@ -8,7 +8,7 @@ import VueTimers from 'vue-timers'
 import './registerServiceWorker'
 import VModal from 'vue-js-modal'
 // eslint-disable-next-line no-unused-vars
-import {constructChart, loadData, sortData, getCPSWOD} from "@/constants";
+import {constructChart, sortData, importData, interpolateData} from "@/constants";
 import moment from "moment";
 import {OverlayScrollbarsComponent} from 'overlayscrollbars-vue';
 import 'overlayscrollbars/css/OverlayScrollbars.css';
@@ -24,7 +24,7 @@ Vue.config.productionTip = false;
 Vue.mixin({
     methods: {
         updateData: function () {
-            fetch("api/stats").catch(e=> {
+            fetch("api/stats").catch(e => {
                 console.warn('Response Error: ' + e);
                 return null
             })
@@ -36,23 +36,8 @@ Vue.mixin({
                     if (response === null)
                         return
                     store.commit('pushStats', response);
+                    store.commit('updateDatasets', response)
                     localStorage.stats = JSON.stringify(store.getters.data.stats);
-                    let key = Object.keys(response)[0]
-                    let inst = response[key];
-                    let time = new Date(moment(key));
-                    store.commit('pushDate', time)
-                    store.commit('pushHitsChange', [time, getCPSWOD(store.getters.lastValueOf('hits'), inst.cache_hits, store.getters.lastDataPairOf('hits')[0], time)]);
-                    store.commit('pushHits', [time, inst.cache_hits]);
-                    store.commit('pushMissesChange', [time,getCPSWOD(store.getters.lastValueOf('misses'), inst.cache_hits, store.getters.lastDataPairOf('misses')[0], time)]);
-                    store.commit('pushMisses', [time, inst.cache_misses]);
-                    store.commit('pushCachedChange', [time, getCPSWOD(store.getters.lastValueOf('cached'), inst.cache_hits, store.getters.lastDataPairOf('cached')[0], time)]);
-                    store.commit('pushCached', [time, inst.browser_cached]);
-                    store.commit('pushBytesSentChange', [time, getCPSWOD(store.getters.lastValueOf('bytesSent'), inst.cache_hits, store.getters.lastDataPairOf('bytesSent')[0], time)]);
-                    store.commit('pushBytesSent', [time, inst.bytes_sent]);
-                    store.commit('pushReqServChange', [time, getCPSWOD(store.getters.lastValueOf('reqServ'), inst.cache_hits, store.getters.lastDataPairOf('reqServ')[0], time)]);
-                    store.commit('pushReqServ', [time, inst.requests_served]);
-                    store.commit('pushSizeDiskChange', [time, getCPSWOD(store.getters.lastValueOf('sizeDisk'), inst.cache_hits, store.getters.lastDataPairOf('sizeDisk')[0], time)]);
-                    store.commit('pushSizeDisk', [time, inst.bytes_on_disk]);
                 }).catch((err) => {
                 console.log(err);
             });
@@ -60,8 +45,23 @@ Vue.mixin({
     }
 })
 
-if (localStorage.stats && store.getters.data.stats.length < 1)
+if (localStorage.refreshRate)
+    store.commit('setRefresh', parseInt(localStorage.refreshRate))
+if (localStorage.stats && store.getters.data.stats.length < 1) {
     store.commit('setStats', JSON.parse(localStorage.stats))
+    let sortNeeded = false;
+    store.getters.data.stats.forEach((x, idx) => {
+        if (idx > 0){
+            if (moment(Object.keys(x)[0]) < moment(Object.keys(store.getters.data.stats[idx - 1])[0])) {
+                sortNeeded = true
+            }
+        }
+    })
+    if (sortNeeded)
+        sortData();
+    interpolateData(store.getters.data.updateInterval, store.getters.data.updateInterval/5);
+    store.commit('setDatasets', importData(JSON.stringify(store.getters.data.stats)))
+}
 fetch("api/pastStats")
     .then(response => response.json().catch(e => {
         console.warn('Response Error: ' + e);
@@ -73,8 +73,7 @@ fetch("api/pastStats")
             store.commit('pushStats', JSON.parse('{"' + k + '": ' + JSON.stringify(response[k]) + '}'))
         });
     }).catch((err) => console.log(err));
-sortData();
-loadData();
+
 
 if (localStorage.hasBackground)
     store.commit('setHasBg', localStorage.hasBackground === 'true')
@@ -98,8 +97,6 @@ if (localStorage.dashboardLayout) {
     }
 } else
     store.commit('resetLayout');
-if (localStorage.refreshRate)
-    store.commit('setRefresh', parseInt(localStorage.refreshRate))
 if (localStorage.consoleLines)
     store.commit('setConsoleData', JSON.parse(localStorage.consoleLines))
 

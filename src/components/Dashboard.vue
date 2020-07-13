@@ -349,7 +349,7 @@
                                                                         style="padding-top: 6px"
                                                                         dense
                                                                         v-model="line.data"
-                                                                        :items="trackabledata"
+                                                                        :items="Object.keys($store.getters.data.datasets).map(x => {return {name: translate(x), data: $store.getters.data.datasets[x]}})"
                                                                         item-value="data"
                                                                         item-text="name"
                                                                         @change="(a) => trackabledata.forEach((b) => {if(a === b.data) line.dataId = b.name})"
@@ -479,9 +479,9 @@
                                                                 style="padding-top: 6px"
                                                                 dense
                                                                 v-model="line.value"
-                                                                :items="trackabledata"
+                                                                :items="Object.keys($store.getters.data.datasets).map(x => {return {name: translate(x), data: $store.getters.data.datasets[x]}})"
                                                                 :item-value="(data) => data.data[data.data.length-1][1]"
-                                                                @change="(a) => trackabledata.forEach((b) => {if(a === b.data[b.data.length-1][1]) line.dataId = b.name})"
+                                                                @change="(a) => Object.keys($store.getters.data.datasets).forEach((b) => {if(a === $store.getters.data.datasets[b][$store.getters.data.datasets[b].length-1][1]) line.dataId = translate(b)})"
                                                                 item-text="name"
                                                                 :dark="$store.getters.current.isDark"
                                                         />
@@ -539,9 +539,9 @@
                 </v-container>
             </modal>
         </div>
-<!--        <v-btn @click="adddata">-->
-<!--            add-->
-<!--        </v-btn>-->
+        <v-btn @click="addData">
+            add
+        </v-btn>
     </v-container>
 </template>
 
@@ -553,7 +553,7 @@
         formatNumber,
         constructChart,
         deconstructChart,
-        addData,
+        addData, translate
     } from "@/constants";
     import moment from "moment";
     import DashGrid from "@/components/dashGrid";
@@ -754,8 +754,8 @@
                     series: [{
                         name: 'item',
                         type: 'line',
-                        data: store.getters.data.hits,
-                        dataId: 'Hits',
+                        data: store.getters.data.datasets[Object.keys(store.getters.data.datasets)[0]],
+                        dataId: translate(Object.keys(store.getters.data.datasets)[0], true),
                         yAxisIndex: 0,
                         showSymbol: false,
                         itemStyle: {color: '#ef0e00'}
@@ -775,8 +775,9 @@
                     },
                     legend: {
                         orient: 'vertical',
-                        show: true,
                         left: 0,
+                        top: 10,
+                        show: true,
                         data: ['item'],
                         inactiveColor: store.getters.current.accent2,
                         textStyle: {
@@ -794,9 +795,8 @@
                         },
                         data: [{
                             name: 'item',
-                            value: store.getters.data.hits[store.getters.data.hits.length - 1] ?
-                                store.getters.data.hits[store.getters.data.hits.length - 1][1] : 0,
-                            dataId: 'Hits',
+                            value: store.getters.getLastValueOfDataset(Object.keys(store.getters.data.datasets)[0]),
+                            dataId: translate(Object.keys(store.getters.data.datasets)[0], true),
                             itemStyle: {color: '#ef0e00'}
                         }]
                     }]
@@ -812,8 +812,8 @@
                 let a = {
                     name: 'item ' + (this.uniqindex++),
                     type: 'line',
-                    data: store.getters.data.hits.map((x) => x),
-                    dataId: 'Hits',
+                    data: store.getters.data.datasets[Object.keys(store.getters.data.datasets)[0]],
+                    dataId: translate(Object.keys(store.getters.data.datasets)[0], true),
                     yAxisIndex: 0,
                     showSymbol: false,
                     itemStyle: {
@@ -837,9 +837,8 @@
                 }
                 let a = {
                     name: 'item ' + (this.uniqpieindex++),
-                    value: store.getters.data.hits[store.getters.data.hits.length - 1] ?
-                        store.getters.data.hits[store.getters.data.hits.length - 1][1] : 0,
-                    dataId: 'Hits',
+                    value: store.getters.getLastValueOfDataset(Object.keys(store.getters.data.datasets)[0]),
+                    dataId: translate(Object.keys(store.getters.data.datasets)[0], true),
                     itemStyle: {color: rand}
                 }
                 store.getters.layout.temppieoptions.series[0].data.splice(index + 1, 0, a)
@@ -900,7 +899,8 @@
                 this.prevreload = !this.prevreload
             },
             exportgraph: (a, t) => deconstructChart(a, t),
-            adddata: () => addData(),
+            addData: () => addData(),
+            translate: (a, b) => translate(a, b),
             log(a) {
                 console.log(a)
             }
