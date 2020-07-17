@@ -44,10 +44,10 @@
             >
                 <v-list-item>
                     <v-list-item-icon>
-                        <v-icon :style="{color: $store.getters.current.textColor}">mdi-format-list-bulleted</v-icon>
+                        <v-icon :style="{color: $store.getters.current.textColor  + '!important'}">mdi-format-list-bulleted</v-icon>
                     </v-list-item-icon>
                     <v-list-item-content>
-                        <v-list-item-title :style="{color: $store.getters.current.textColor}">Menu
+                        <v-list-item-title :style="{color: $store.getters.current.textColor  + '!important'}">Menu
                         </v-list-item-title>
                     </v-list-item-content>
                 </v-list-item>
@@ -60,10 +60,10 @@
                         class="mt-1"
                 >
                     <v-list-item-icon>
-                        <v-icon :style="{color: $store.getters.current.textColor}">{{ item.icon }}</v-icon>
+                        <v-icon :style="{color: $store.getters.current.textColor + '!important'}">{{ item.icon }}</v-icon>
                     </v-list-item-icon>
                     <v-list-item-content>
-                        <v-list-item-title :style="{color: $store.getters.current.textColor}">{{ item.title }}
+                        <v-list-item-title :style="{color: $store.getters.current.textColor + '!important'}">{{ item.title }}
                         </v-list-item-title>
                     </v-list-item-content>
                 </v-list-item>
@@ -97,7 +97,8 @@
 
 <script>
     import store from "@/store";
-    // import moment from "moment";
+    import vuetify from '@/plugins/vuetify'
+    import {getLightness} from "@/constants";
 
     export default {
         name: 'App',
@@ -136,23 +137,46 @@
                 //     'TRACE'
                 // ]
                 // store.commit('pushConsoleLine',moment(moment.now()).format('YYYY-MM-DD hh:mm:ss') + ' ' + levels[Math.floor(Math.random() * levels.length)] + ' ' + list[Math.floor(Math.random() * list.length)])
-
                 this.updateData();
+            },
+            updateNav(){
+                let temp = [{title: 'Dashboard', icon: 'mdi-view-dashboard', route: '/'}]
+                if (store.getters.options.exp_showConsole)
+                    temp.push({title: 'Console', icon: 'mdi-console', route: '/cons'})
+                temp.push({title: 'Settings', icon: 'mdi-cog-outline', route: '/opts'})
+                if (store.getters.options.exp_showAbout)
+                    temp.push({title: 'Client Info', icon: 'mdi-information-outline', route: '/info'})
+                this.items = temp
             }
         },
         mounted() {
+            document.body.style.backgroundColor = store.getters.current.backgroundColor;
+            vuetify.framework.theme.dark = getLightness(store.getters.current.secondary) < 50
             this.timers.pullData.time = store.getters.data.updateInterval
             this.$timer.restart('pullData')
+            this.updateNav()
         },
         computed: {
             refresh() {
                 return store.getters.data.updateInterval;
+            },
+            console(){
+                return store.getters.options.exp_showConsole
+            },
+            about(){
+                return store.getters.options.exp_showAbout;
             }
         },
         watch: {
             refresh() {
                 this.timers.pullData.time = store.getters.data.updateInterval
                 this.$timer.restart('pullData')
+            },
+            console(){
+                this.updateNav()
+            },
+            about(){
+                this.updateNav()
             }
         }
     }

@@ -11,67 +11,87 @@ const state = {
         hasBgImage: false,
         bgImage: 'https://images3.alphacoders.com/819/thumb-1920-819294.png',
         showAppBar: true,
+        lockGrid: false,
+        exp_showSlider: false,
+        exp_connectGraphs: false,
+        exp_showConsole: false,
+        exp_consoleGrid: false,
+        exp_showAbout: false,
+        exp_showClientSettings: false,
+        superSecret: false,
     },
     themes: {
+        backgroundAlpha: 240,              //the alpha to apply if a background exists
+        custom: {
+            backgroundColor: '#efeff0',
+            textColor: '#202020',
+            primary: '#fbfbfe',
+            secondary: '#fafafa',
+            active: '#e7e7e7',
+            accent: '#717175ff',
+            accent1: '#96969eB4',
+            accent2: '#5e5e624D',
+            green: '#00e000',
+            red: '#e00000',
+            yellow: '#e0e000',
+        },
         light: {                                //internal name for theme
             backgroundAlpha: 'f0',              //the alpha to apply if a background exists
             backgroundColor: '#efeff0',         //background color
             textColor: '#202020',               //text color
             primary: '#fbfbfe',                 //color of page and side bars
             secondary: '#fafafa',               //color of title bars and content containers
-            accent: '#717175',                  //misc, mainly used as a secondary text/icon color
+            active: '#4b4b4b',                  //color of active switches
+            accent: '#e0e0e0',                  //misc, mainly used as a secondary text/icon color
             accent1: 'rgba(150,150,158, 0.3)',  //misc, mainly used as button color
             accent2: 'rgba(94,94,98,0.7)',      //misc
             green: '#00e000',                   //unused
             red: '#e00000',                     //unused
             yellow: '#e0e000',                  //unused
-            isDark: false,                      //internal use only, will be removed
-        },
-        eyekiller: {  //internal name for theme
-            backgroundAlpha: 'f0',              //the alpha to apply if a background exists
-            backgroundColor: '#26ff00',         //background color
-            textColor: '#000000',               //text color
-            primary: '#ee00ff',                 //color of page and side bars
-            secondary: '#ffc800',               //color of title bars and content containers
-            accent: '#00aeff',                  //misc, mainly used as a secondary text/icon color
-            accent1: 'rgba(255,0,0,0.3)',       //misc, mainly used as button color
-            accent2: 'rgba(0,32,255,0.7)',      //misc
-            green: '#00ff00',                   //unused
-            red: '#ff0000',                     //unused
-            yellow: '#ffff00',                  //unused
-            isDark: false,                      //internal use only, will be removed
         },
         dark: {
-            backgroundAlpha: 'f0',
             backgroundColor: '#353536',
-            textColor: '#f0f0f0',
+            textColor: '#f6f6f6',
             primary: '#505053',
             secondary: '#454547',
+            active: '#e7e7e7',
             accent: '#606065',
             accent1: 'rgba(200,200,210,0.3)',
             accent2: 'rgba(200,200,210,0.7)',
             green: '#00e000',
             red: '#e00000',
             yellow: '#e0e000',
-            isDark: true,
         },
         midnight: {
-            backgroundAlpha: 'f0',
             backgroundColor: '#000',
             textColor: '#d0d0d0',
             primary: '#191919',
             secondary: '#212122',
-            accent: '#9d9da0',
+            active: '#cbcbcb',
+            accent: '#6b6b6d',
             accent1: 'rgba(255,255,255,0.3)',
             accent2: 'rgba(95,95,100,0.7)',
             green: '#00a000',
             red: '#a00000',
             yellow: '#a0a000',
-            isDark: true,
+        },
+        eyekiller: {  //internal name for theme
+            backgroundColor: '#26ff00',         //background color
+            textColor: '#000000',               //text color
+            primary: '#ee00ff',                 //color of page and side bars
+            secondary: '#ffc800',               //color of title bars and content containers
+            active: '#4b4b4b',
+            accent: '#00aeff',                  //misc, mainly used as a secondary text/icon color
+            accent1: 'rgba(255,0,0,0.3)',       //misc, mainly used as button color
+            accent2: 'rgba(0,32,255,0.7)',      //misc
+            green: '#00ff00',                   //unused
+            red: '#ff0000',                     //unused
+            yellow: '#ffff00',                  //unused
         },
     },
     data: {
         datasets: {},
+        socket: null,
         stats: [],
         updateInterval: 2000,
         maxStorePoints: 1801,
@@ -83,10 +103,19 @@ const state = {
         temppieoptions: {title: {text: 'title'}, legend: {show: true}},
     },
     console: {
+        grid: [{x: 0, y: 0, w: 10, h: 8, i: 0, c: 1},
+            {x: 10, y: 0, w: 14, h: 8, i: 1, c: 2},
+            {x: 0, y: 8, w: 24, h: 10, i: 2, c: 0}],
         data: [],
         maxLines: 1000
     }
 };
+
+// eslint-disable-next-line no-unused-vars
+const defaultConsoleLayout = [
+    {x: 0, y: 0, w: 10, h: 8, i: 0, c: 1},
+    {x: 10, y: 0, w: 14, h: 8, i: 1, c: 2},
+    {x: 0, y: 8, w: 24, h: 10, i: 2, c: 0}];
 
 const defaultLayout = [
     {x: 0, y: 0, w: 24, h: 8, i: 0},
@@ -98,12 +127,26 @@ const defaultCharts = [
         type: 'graph',
         title: {left: 'center', text: 'Requests'},
         tooltip: {trigger: 'axis', axisPointer: {type: 'cross', label: {formatter: 'number'}}},
-        legend: {left: 'center', show: true, top: 35, data: ['Requests', 'Hits', 'Misses']},
+        legend: {left: 'center', show: true, top: 30, data: ['Requests', 'Hits', 'Misses']},
         yAxis: [{
             type: 'value',
-            name: 'Change/s',
+            name: 'Req/s',
             scale: true,
             offset: 0,
+            axisLabel: {unit: 2},
+            splitLine: {show: false}
+        }, {
+            type: 'value',
+            name: 'Hits/s',
+            scale: true,
+            offset: 0,
+            axisLabel: {unit: 2},
+            splitLine: {show: false}
+        }, {
+            type: 'value',
+            name: 'Misses/s',
+            scale: true,
+            offset: 80,
             axisLabel: {unit: 2},
             splitLine: {show: false}
         }],
@@ -120,7 +163,7 @@ const defaultCharts = [
             type: 'line',
             data: null,
             dataId: 'Change in Hits',
-            yAxisIndex: 0,
+            yAxisIndex: 1,
             showSymbol: false,
             itemStyle: {colorId: 'green'}
         }, {
@@ -128,7 +171,7 @@ const defaultCharts = [
             type: 'line',
             data: null,
             dataId: 'Change in Misses',
-            yAxisIndex: 0,
+            yAxisIndex: 2,
             showSymbol: false,
             itemStyle: {colorId: 'red'}
         }]
@@ -142,7 +185,7 @@ const defaultCharts = [
         legend: {
             orient: 'vertical',
             left: 0,
-            top: 10,
+            top: 4,
             show: true,
             data: ['Hits', 'Misses', 'Cached'],
         },
@@ -173,7 +216,7 @@ const defaultCharts = [
                         value: 0,
                         name: 'Cached',
                         dataId: 'Browser Cached',
-                        itemStyle: {colorId: 'accent'}
+                        itemStyle: {colorId: 'accent1'}
                     },
                 ]
             }
@@ -196,7 +239,7 @@ const defaultCharts = [
         },
         legend: {
             left: 'center',
-            top: 35,
+            top: 30,
             data: ['Total', 'Change'],
         },
         yAxis: [{
@@ -317,7 +360,7 @@ const defaultCharts = [
         },
         legend: {
             left: 'center',
-            top: 35,
+            top: 30,
             data: ['Total', 'Change'],
         },
         yAxis: [{
@@ -365,13 +408,12 @@ const defaultCharts = [
 
 const getters = {
     current: state => state.themes[state.options.current],
+    themes: state => state.themes,
     options: state => state.options,
     hasBgImage: state => state.options.hasBgImage,
     bgImg: state => state.options.bgImage,
     showAppBar: state => state.options.showAppBar,
-    alpha: state => {
-        return (state.options.hasBgImage ? state.themes[state.options.current].backgroundAlpha : '')
-    },
+    alpha: state => state.options.hasBgImage ? state.themes.backgroundAlpha.toString(16) : '',
     data: state => state.data,
     getDataset: state => dataset => state.data.datasets[dataset],
     getLastValueOfDataset: state => dataset => state.data.datasets[dataset] ?
@@ -385,9 +427,28 @@ const mutations = {
     setTheme(state, theme) {
         state.options.current = theme;
         localStorage.theme = theme;
-        if (state.layout.charts.length > 0)
-            state.layout.charts = JSON.parse(localStorage.dashboardCharts).map((x) => constructChart(x))
         document.body.style.backgroundColor = state.themes[state.options.current].backgroundColor;
+    },
+    setAlpha(state, val) {
+        state.themes.backgroundAlpha = val
+    },
+    setCustom(state, val) {
+        state.themes.custom = val
+    },
+    resetCustom(state) {
+        state.themes.custom = {
+            backgroundColor: '#efeff0',
+            textColor: '#202020',
+            primary: '#fbfbfe',
+            secondary: '#fafafa',
+            active: '#4b4b4b',
+            accent: '#717175ff',
+            accent1: '#96969eB4',
+            accent2: '#5e5e624D',
+            green: '#00e000',
+            red: '#e00000',
+            yellow: '#e0e000',
+        }
     },
     setStats(state, val) {
         state.data.stats = val;
@@ -461,23 +522,11 @@ const mutations = {
         localStorage.dashboardLayout = JSON.stringify(state.layout.grid)
         localStorage.dashboardCharts = JSON.stringify(state.layout.charts)
     },
-    setSpecificLayout(store, val) {
-        let index = 0;
-        store.layout.grid.forEach((x, idx) => {
-            if (x.i === val.i) index = idx
-        })
-        if (val.w != null)
-            store.layout.grid[index].w = val.w;
-        if (val.h != null)
-            store.layout.grid[index].h = val.h;
-        if (val.x != null)
-            store.layout.grid[index].x = val.x;
-        if (val.y != null)
-            store.layout.grid[index].y = val.y;
-        localStorage.dashboardLayout = JSON.stringify(state.layout.grid)
-    },
     setLayout(store, val) {
         store.layout.grid = val;
+    },
+    setConsoleLayout(store, val) {
+        store.console.grid = val;
     },
     setChart(store, val) {
         store.layout.charts = val;
@@ -543,6 +592,9 @@ const mutations = {
     },
     setMaxConsoleLines(state, val) {
         state.console.maxLines = val;
+    },
+    setOption(state, val) {
+        state.options[val[0]] = val[1]
     }
 }
 

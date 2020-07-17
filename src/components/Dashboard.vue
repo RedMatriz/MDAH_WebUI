@@ -11,7 +11,7 @@
                             v-if="!$vuetify.breakpoint.mdAndDown"
                             :style="{color: $store.getters.current.textColor}"
                             style="position: absolute; right: 0;margin-right: 28px; margin-top: 5px"
-                            :color="$store.getters.current.accent1"
+                            :color="$store.getters.current.accent"
                             tile
                             @click="showModal"
                     >
@@ -22,7 +22,7 @@
                             v-if="$vuetify.breakpoint.mdAndDown"
                             :style="{color: $store.getters.current.textColor}"
                             style="position: absolute; right: 0;margin-right: 28px; margin-top: 5px"
-                            :color="$store.getters.current.accent1"
+                            :color="$store.getters.current.accent"
                             tile
                             @click="showModal"
                     >
@@ -32,15 +32,14 @@
             </v-row>
         </v-container>
         <div ref="grid" style="position:relative; width: calc(100% + 24px); left: -12px"
-             :hidden="$vuetify.breakpoint.smAndDown"></div>
-        <!--        <dash-grid/>-->
+             v-if="!$vuetify.breakpoint.smAndDown"></div>
         <v-row v-if="$vuetify.breakpoint.smAndDown">
             <v-col cols="12" v-for="(item, index) in $store.getters.layout.charts" class="pb-0" :key="index">
                 <v-container fluid style="height: 300px;width: 100%; position: relative"
                              :style="{backgroundColor: $store.getters.current.secondary + $store.getters.alpha}">
                     <chart style="height: 100%;width: 100%" autoresize
                            :options="item"/>
-                    <v-icon :style="{position: 'absolute', color: $store.getters.current.accent, top: '2px', right: '2px'}"
+                    <v-icon :style="{position: 'absolute', color: store.getters.current.textColor  + '!important', top: '2px', right: '2px'}"
                             dense small
                             @click="$store.commit('removeLayoutContainer', index)"
                     >mdi-close
@@ -83,14 +82,16 @@
                                             class="pt-1"
                                             dense
                                             v-model="$store.getters.layout.tempoptions.title.text"
-                                            :dark="$store.getters.current.isDark"
+                                            color="textColor"
+                                            :dark="getLightness($store.getters.current.secondary) < 50"
                                     />
                                     <v-text-field
                                             v-if="!graph"
                                             class="pt-1"
                                             dense
                                             v-model="$store.getters.layout.temppieoptions.title.text"
-                                            :dark="$store.getters.current.isDark"
+                                            color="textColor"
+                                            :dark="getLightness($store.getters.current.secondary) < 50"
                                     />
                                 </v-col>
                             </v-row>
@@ -131,29 +132,29 @@
                                             dense
                                             mandatory
                                             tile
-                                            :dark="$store.getters.current.isDark"
+                                            :dark="getLightness($store.getters.current.secondary) < 50"
                                     >
                                         <v-btn
                                                 v-model="graph"
                                                 :style="{color: $store.getters.current.textColor}"
-                                                :color="$store.getters.current.accent1"
+                                                :color="$store.getters.current.accent"
                                                 small>
                                             Graph
                                         </v-btn>
                                         <v-btn :style="{color: $store.getters.current.textColor}"
-                                               :color="$store.getters.current.accent1"
+                                               :color="$store.getters.current.accent"
                                                small>
                                             Pie
                                         </v-btn>
                                     </v-btn-toggle>
                                 </v-col>
                             </v-row>
-                            <v-fade-transition>
+                            <v-fade-transition leave-absolute hide-on-leave>
                                 <div v-if="graph">
                                     <v-btn
                                             style="width: 100%; height: 14px; padding-top: 2px; padding-bottom: 2px"
                                             :style="{color: $store.getters.current.textColor}"
-                                            :color="$store.getters.current.accent1"
+                                            :color="$store.getters.current.accent"
                                             elevation="0"
                                             class="mt-2"
                                             tile
@@ -178,7 +179,7 @@
                                                                 small
                                                                 icon
                                                                 :style="{color: $store.getters.current.textColor}"
-                                                                :color="$store.getters.current.accent1"
+                                                                :color="$store.getters.current.accent"
                                                                 @click="addAxis(index)"
                                                         >
                                                             <v-icon>mdi-plus</v-icon>
@@ -189,7 +190,7 @@
                                                                 icon
                                                                 v-if="$store.getters.layout.tempoptions.yAxis.length > 1"
                                                                 :style="{color: $store.getters.current.textColor}"
-                                                                :color="$store.getters.current.accent1"
+                                                                :color="$store.getters.current.accent"
                                                                 @click="removeAxis(index)"
                                                         >
                                                             <v-icon>mdi-minus</v-icon>
@@ -212,7 +213,8 @@
                                                                         style="padding-top: 6px"
                                                                         dense
                                                                         v-model="line.name"
-                                                                        :dark="$store.getters.current.isDark"
+                                                                        color="textColor"
+                                                                        :dark="getLightness($store.getters.current.secondary) < 50"
                                                                 />
                                                             </v-col>
                                                         </v-row>
@@ -235,7 +237,9 @@
                                                                         :value="line.axisLabel ? line.axisLabel.unit : 0"
                                                                         item-text="name"
                                                                         item-value="idx"
-                                                                        :dark="$store.getters.current.isDark"
+                                                                        item-color="active"
+                                                                        color="textColor"
+                                                                        :dark="getLightness($store.getters.current.secondary) < 50"
                                                                         @change="(x) => setYAxisUnits(x, index)"
                                                                 />
                                                             </v-col>
@@ -248,7 +252,7 @@
                                     <v-btn
                                             style="width: 100%; height: 14px; padding-top: 2px; padding-bottom: 2px"
                                             :style="{color: $store.getters.current.textColor}"
-                                            :color="$store.getters.current.accent1"
+                                            :color="$store.getters.current.accent"
                                             elevation="0"
                                             class="mt-2"
                                             tile
@@ -272,7 +276,7 @@
                                                                 small
                                                                 icon
                                                                 :style="{color: $store.getters.current.textColor, marginTop: '10px'}"
-                                                                :color="$store.getters.current.accent1"
+                                                                :color="$store.getters.current.accent"
                                                                 @click="addSet(index)"
                                                         >
                                                             <v-icon>mdi-plus</v-icon>
@@ -282,7 +286,7 @@
                                                                 icon
                                                                 v-if="$store.getters.layout.tempoptions.series.length > 1"
                                                                 :style="{color: $store.getters.current.textColor, marginTop: '10px'}"
-                                                                :color="$store.getters.current.accent1"
+                                                                :color="$store.getters.current.accent"
                                                                 @click="removeSet(index)"
                                                         >
                                                             <v-icon>mdi-minus</v-icon>
@@ -306,7 +310,8 @@
                                                                         dense
                                                                         v-model="line.name"
                                                                         @input="(a) => $store.getters.layout.tempoptions.legend.data[index] = a"
-                                                                        :dark="$store.getters.current.isDark"
+                                                                        color="textColor"
+                                                                        :dark="getLightness($store.getters.current.secondary) < 50"
                                                                 />
                                                             </v-col>
                                                         </v-row>
@@ -329,7 +334,9 @@
                                                                         :items="graphTypes"
                                                                         item-value="val"
                                                                         item-text="name"
-                                                                        :dark="$store.getters.current.isDark"
+                                                                        item-color="active"
+                                                                        color="textColor"
+                                                                        :dark="getLightness($store.getters.current.secondary) < 50"
                                                                 />
                                                             </v-col>
                                                         </v-row>
@@ -349,11 +356,13 @@
                                                                         style="padding-top: 6px"
                                                                         dense
                                                                         v-model="line.data"
-                                                                        :items="Object.keys($store.getters.data.datasets).map(x => {return {name: translate(x), data: $store.getters.data.datasets[x]}})"
+                                                                        :items="datasets"
                                                                         item-value="data"
                                                                         item-text="name"
-                                                                        @change="(a) => trackabledata.forEach((b) => {if(a === b.data) line.dataId = b.name})"
-                                                                        :dark="$store.getters.current.isDark"
+                                                                        @change="(a) => datasets.forEach((b) => {if(a === b.data) line.dataId = b.name})"
+                                                                        item-color="active"
+                                                                        color="textColor"
+                                                                        :dark="getLightness($store.getters.current.secondary) < 50"
                                                                 />
                                                             </v-col>
                                                         </v-row>
@@ -376,7 +385,9 @@
                                                                         :value="line.yAxisIndex ? line.yAxisIndex : 0"
                                                                         item-text="data.name"
                                                                         item-value="idx"
-                                                                        :dark="$store.getters.current.isDark"
+                                                                        item-color="active"
+                                                                        color="textColor"
+                                                                        :dark="getLightness($store.getters.current.secondary) < 50"
                                                                         @change="(x) => setYAxis(x, index)"
                                                                 />
                                                             </v-col>
@@ -418,7 +429,7 @@
                                     </v-expand-transition>
                                 </div>
                             </v-fade-transition>
-                            <v-fade-transition>
+                            <v-fade-transition leave-absolute hide-on-leave>
                                 <div v-if="!graph">
                                     <div v-for="(line, index) in $store.getters.layout.temppieoptions.series[0].data"
                                          :key="index">
@@ -431,7 +442,7 @@
                                                         small
                                                         icon
                                                         :style="{color: $store.getters.current.textColor, marginTop: '10px'}"
-                                                        :color="$store.getters.current.accent1"
+                                                        :color="$store.getters.current.accent"
                                                         @click="addPieSet(index)"
                                                 >
                                                     <v-icon>mdi-plus</v-icon>
@@ -441,7 +452,7 @@
                                                         icon
                                                         v-if="$store.getters.layout.temppieoptions.series[0].data.length > 1"
                                                         :style="{color: $store.getters.current.textColor, marginTop: '10px'}"
-                                                        :color="$store.getters.current.accent1"
+                                                        :color="$store.getters.current.accent"
                                                         @click="removePieSet(index)"
                                                 >
                                                     <v-icon>mdi-minus</v-icon>
@@ -462,7 +473,8 @@
                                                                 dense
                                                                 v-model="line.name"
                                                                 @input="(a) => $store.getters.layout.temppieoptions.legend.data[index] = a"
-                                                                :dark="$store.getters.current.isDark"
+                                                                color="textColor"
+                                                                :dark="getLightness($store.getters.current.secondary) < 50"
                                                         />
                                                     </v-col>
                                                 </v-row>
@@ -483,7 +495,9 @@
                                                                 :item-value="(data) => data.data[data.data.length-1][1]"
                                                                 @change="(a) => Object.keys($store.getters.data.datasets).forEach((b) => {if(a === $store.getters.data.datasets[b][$store.getters.data.datasets[b].length-1][1]) line.dataId = translate(b)})"
                                                                 item-text="name"
-                                                                :dark="$store.getters.current.isDark"
+                                                                item-color="active"
+                                                                color="textColor"
+                                                                :dark="getLightness($store.getters.current.secondary) < 50"
                                                         />
                                                     </v-col>
                                                 </v-row>
@@ -531,7 +545,7 @@
                     </v-row>
                     <v-btn absolute tile
                            :style="{color: $store.getters.current.textColor, right: '12px', bottom: '12px'}"
-                           :color="$store.getters.current.accent1"
+                           :color="$store.getters.current.accent"
                            @click="() => {$store.commit('addLayoutContainer', construct(exportgraph(graph ? $store.getters.layout.tempoptions : $store.getters.layout.temppieoptions , graph ? 'graph': 'pie'))); $modal.hide('createGraph')}"
                     >
                         Add Graph
@@ -539,9 +553,6 @@
                 </v-container>
             </modal>
         </div>
-        <v-btn @click="addData">
-            add
-        </v-btn>
     </v-container>
 </template>
 
@@ -553,9 +564,8 @@
         formatNumber,
         constructChart,
         deconstructChart,
-        addData, translate
+        addData, translate, getLightness, biscuitUnits
     } from "@/constants";
-    import moment from "moment";
     import DashGrid from "@/components/dashGrid";
     import Vue from 'vue'
 
@@ -584,25 +594,32 @@
                     name: 'Number',
                     arr: numberUnits
                 }],
-                trackabledata: [
-                    {name: 'Hits', data: store.getters.data.hits},
-                    {name: 'Misses', data: store.getters.data.misses},
-                    {name: 'Browser Cached', data: store.getters.data.cached},
-                    {name: 'Requests Served', data: store.getters.data.reqServ},
-                    {name: 'Bytes Sent', data: store.getters.data.bytesSent},
-                    {name: 'Bytes On Disk', data: store.getters.data.sizeDisk},
-                    {name: 'Change in Hits', data: store.getters.data.hitsChange},
-                    {name: 'Change in Misses', data: store.getters.data.missesChange},
-                    {name: 'Change in Browser Cached', data: store.getters.data.cachedChange},
-                    {name: 'Change in Requests Served', data: store.getters.data.reqServChange},
-                    {name: 'Change in Bytes Sent', data: store.getters.data.bytesSentChange},
-                    {name: 'Change in Bytes On Disk', data: store.getters.data.sizeDiskChange},
-                ],
+                datasets: Object.keys(store.getters.data.datasets).map(x => translate(x)).sort().map(x => {
+                    return {name: x, data: store.getters.data.datasets[translate(x, true)]}
+                }),
                 graphTypes: [{name: 'Line', val: 'line'}, {name: 'Bar', val: 'bar'}],
                 instance: null
             }
         },
         mounted() {
+            if (store.getters.options.superSecret)
+                this.units = [{
+                    idx: 0,
+                    name: 'None',
+                    arr: []
+                }, {
+                    idx: 1,
+                    name: 'Data',
+                    arr: dataUnits
+                }, {
+                    idx: 2,
+                    name: 'Number',
+                    arr: numberUnits
+                }, {
+                    idx: 3,
+                    name: 'Biscuit',
+                    arr: biscuitUnits
+                }]
             this.$nextTick(() => {
                 this.instance = new ComponentClass()
                 this.instance.$mount()
@@ -618,189 +635,63 @@
                 this.uniqpieindex = 0;
                 this.uniqindex = 0;
                 this.axisindex = 0;
-                store.commit('setTempOptions', {
-                    title: {
-                        left: 'center',
-                        text: 'Title',
-                        textStyle: {
-                            color: store.getters.current.textColor
-                        }
-                    },
-                    tooltip: {
-                        trigger: 'axis',
-                        axisPointer: {
-                            type: 'cross',
-                            label: {
-                                color: store.getters.current.secondary,
-                                formatter: (point) => {
-                                    if (point.axisDimension === 'x' && point.seriesData[0] && point.seriesData[0].data)
-                                        return moment.utc(point.seriesData[0].data[0]).format('MMM D, h:mm:ssa')
-                                    return point.value.toFixed(0)
-                                }
-                            },
-                        }
-                    },
-                    toolbox: {
-                        orient: 'vertical',
-                        top: 30,
-                        iconStyle: {
-                            color: store.getters.current.accent,
-                            borderColor: '#00000000'
-                        },
-                        emphasis: {
-                            iconStyle: {
-                                textPosition: 'left',
-                                color: store.getters.current.accent2,
-                                borderColor: '#00000000'
-                            }
-                        },
-                        feature: {
-                            dataZoom: {
-                                show: true,
-                                yAxisIndex: 'none',
-                                icon: {
-                                    zoom: 'M14,17H17V14H19V17H22V19H19V22H17V19H14V17M12,17V19H9V17H12M7,17V19H3V15H5V17H7M3,13V10H5V13H3M3,8V4H7V6H5V8H3M9,4H12V6H9V4M15,4H19V8H17V6H15V4M19,10V12H17V10H19Z',
-                                    back: 'M13.5,7A6.5,6.5 0 0,1 20,13.5A6.5,6.5 0 0,1 13.5,20H10V18H13.5C16,18 18,16 18,13.5C18,11 16,9 13.5,9H7.83L10.91,12.09L9.5,13.5L4,8L9.5,2.5L10.92,3.91L7.83,7H13.5M6,18H8V20H6V18Z'
-                                },
-                                title: {
-                                    zoom: 'Zoom',
-                                    back: "Undo"
-                                }
-                            },
-                            restore: {
-                                title: 'Restore',
-                                icon: 'M2 12C2 16.97 6.03 21 11 21C13.39 21 15.68 20.06 17.4 18.4L15.9 16.9C14.63 18.25 12.86 19 11 19C4.76 19 1.64 11.46 6.05 7.05C10.46 2.64 18 5.77 18 12H15L19 16H19.1L23 12H20C20 7.03 15.97 3 11 3C6.03 3 2 7.03 2 12Z',
-                            }
-                        }
-                    },
-                    grid: {
-                        right: 40,
-                        left: 40,
-                        bottom: 40,
-                        top: 60,
-                        containLabel: true,
-                    },
-                    legend: {
-                        left: 'center',
-                        show: true,
-                        top: 22,
-                        data: ['item'],
-                        inactiveColor: store.getters.current.accent2,
-                        textStyle: {
-                            color: store.getters.current.textColor
-                        }
-                    },
-                    xAxis: {
-                        type: 'time',
-                        axisLine: {
-                            lineStyle: {
-                                color: store.getters.current.textColor
-                            }
-                        },
-                        splitLine: {
-                            lineStyle: {
-                                color: store.getters.current.accent1
-                            }
-                        },
-                        axisLabel: {
-                            formatter: (value) => moment.utc(value).format('MMM D|h:mma').replace('|', '\n'),
-                            splitNumber: 10,
-                            showMaxLabel: true,
-                            showMinLabel: true,
-                        },
-                        // value: store.getters.data.date
-                    },
+                store.commit('setTempOptions', constructChart({
+                    type: 'graph',
+                    title: {left: 'center', text: 'Title'},
+                    tooltip: {trigger: 'axis', axisPointer: {type: 'cross', label: {formatter: 'number'}}},
+                    legend: {left: 'center', show: true, top: 35, data: ['Item']},
                     yAxis: [{
                         type: 'value',
-                        name: 'axis',
+                        name: 'Axis',
                         scale: true,
-                        max: (value) => value.max.toFixed(5).replace(/\.?0*$/, ''),
-                        min: (value) => value.min.toFixed(5).replace(/\.?0*$/, ''),
-                        axisLine: {
-                            lineStyle: {
-                                color: store.getters.current.textColor
-                            }
-                        },
-                        axisLabel: {
-                            formatter: null,
-                            unit: 0
-                        },
-                        splitLine: {
-                            show: false
-                        },
-                    }],
-                    dataZoom: [{
-                        type: 'inside',
-                    }, {
-                        start: 90,
-                        type: 'slider',
-                        handleSize: '100%',
-                        fillerColor: store.getters.current.accent1,
-                        handleStyle: {
-                            color: store.getters.current.textColor,
-                        },
-                        dataBackground: {
-                            lineStyle: {
-                                color: store.getters.current.textColor
-                            },
-                            areaStyle: {
-                                color: store.getters.current.accent
-                            }
-                        },
-                        textStyle: {
-                            color: store.getters.current.textColor
-                        },
+                        offset: 0,
+                        axisLabel: {unit: 2},
+                        splitLine: {show: false}
                     }],
                     series: [{
-                        name: 'item',
+                        name: 'Item',
                         type: 'line',
-                        data: store.getters.data.datasets[Object.keys(store.getters.data.datasets)[0]],
-                        dataId: translate(Object.keys(store.getters.data.datasets)[0], true),
+                        data: null,
+                        dataId: this.datasets[0].name,
                         yAxisIndex: 0,
                         showSymbol: false,
-                        itemStyle: {color: '#ef0e00'}
+                        itemStyle: {colorId: 'text'}
                     }]
-                })
-                store.commit('setTempPieOptions', {
+                }))
+                store.commit('setTempPieOptions', constructChart({
+                    type: 'pie',
                     title: {
                         left: 'center',
                         text: 'Title',
-                        textStyle: {
-                            color: store.getters.current.textColor
-                        }
-                    },
-                    tooltip: {
-                        trigger: 'item',
-                        formatter: ' {b}<br/>{c} ({d}%)'
                     },
                     legend: {
                         orient: 'vertical',
                         left: 0,
                         top: 10,
                         show: true,
-                        data: ['item'],
-                        inactiveColor: store.getters.current.accent2,
-                        textStyle: {
-                            color: store.getters.current.textColor
-                        }
+                        data: ['Item'],
                     },
-                    series: [{
-                        type: 'pie',
-                        avoidLabelOverlap: true,
-                        label: {
-                            show: false,
-                        },
-                        labelLine: {
-                            show: false
-                        },
-                        data: [{
-                            name: 'item',
-                            value: store.getters.getLastValueOfDataset(Object.keys(store.getters.data.datasets)[0]),
-                            dataId: translate(Object.keys(store.getters.data.datasets)[0], true),
-                            itemStyle: {color: '#ef0e00'}
-                        }]
-                    }]
-                })
+                    series: [
+                        {
+                            type: 'pie',
+                            avoidLabelOverlap: true,
+                            label: {
+                                show: false,
+                            },
+                            labelLine: {
+                                show: false
+                            },
+                            data: [
+                                {
+                                    value: 0,
+                                    name: 'Item',
+                                    dataId: this.datasets[0].name,
+                                    itemStyle: {colorId: 'text'}
+                                }
+                            ]
+                        }
+                    ]
+                }))
                 this.$modal.show('createGraph')
             },
             addSet(index) {
@@ -812,8 +703,8 @@
                 let a = {
                     name: 'item ' + (this.uniqindex++),
                     type: 'line',
-                    data: store.getters.data.datasets[Object.keys(store.getters.data.datasets)[0]],
-                    dataId: translate(Object.keys(store.getters.data.datasets)[0], true),
+                    data: this.datasets[0].data,
+                    dataId: this.datasets[0].name,
                     yAxisIndex: 0,
                     showSymbol: false,
                     itemStyle: {
@@ -837,8 +728,8 @@
                 }
                 let a = {
                     name: 'item ' + (this.uniqpieindex++),
-                    value: store.getters.getLastValueOfDataset(Object.keys(store.getters.data.datasets)[0]),
-                    dataId: translate(Object.keys(store.getters.data.datasets)[0], true),
+                    value: store.getters.getLastValueOfDataset(translate(this.datasets[0].name, true)),
+                    dataId: this.datasets[0].name,
                     itemStyle: {color: rand}
                 }
                 store.getters.layout.temppieoptions.series[0].data.splice(index + 1, 0, a)
@@ -900,6 +791,7 @@
             },
             exportgraph: (a, t) => deconstructChart(a, t),
             addData: () => addData(),
+            getLightness: (H) => getLightness(H),
             translate: (a, b) => translate(a, b),
             log(a) {
                 console.log(a)

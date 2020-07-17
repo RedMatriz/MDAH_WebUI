@@ -52,7 +52,7 @@
                 text: 'Loading…',
                 color: store.getters.current.textColor,
                 textColor: store.getters.current.textColor,
-                maskColor: store.getters.current.primary +  '9f'
+                maskColor: store.getters.current.primary + '9f'
             })
             this.$refs.placeholder.$el.style.width = this.$el.style.width
             this.$refs.placeholder.$el.style.height = this.$el.style.height
@@ -72,13 +72,17 @@
                 this.instance.$el.style.width = this.$el.style.width
                 this.instance.$el.style.height = this.$el.style.height
                 this.instance.chart.on('finished', () => {
+                    if (store.getters.options.exp_connectGraphs)
+                        chart.connect(this.group)
+                    else
+                        chart.disconnect(this.group)
                     this.instance.chart.off('finished')
                     this.$refs.gcontainer.removeChild(this.$refs.placeholder.$el)
                     this.$refs.gcontainer.appendChild(this.instance.$el)
                 })
             })
         },
-        beforeDestroy(){
+        beforeDestroy() {
             this.instance.$destroy()
         }
     }

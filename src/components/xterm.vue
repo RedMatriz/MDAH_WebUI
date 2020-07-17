@@ -1,5 +1,5 @@
 <template>
-    <div :id="genid"></div>
+    <div :id="genid" ref="term"></div>
 </template>
 
 <script>
@@ -34,7 +34,8 @@
         },
         mounted() {
             this.currentLine = store.getters.console.data.length
-            this.term.open(document.getElementById(this.genid))
+            // this.term.open(document.getElementById(this.genid))
+            this.term.open(this.$refs.term.$el)
             window.addEventListener('resize', this.fit)
             this.$nextTick(() => this.fitaddon.fit())
             this.runFakeTerminal()
@@ -55,7 +56,7 @@
                 let message = input.substr(26)
                 let tid = ''
                 let line = ''
-                if (message.includes('hit cache') || message.includes('cached and served') || message.includes('being served')) {
+                if (message.includes('hit cache') || message.includes('cached and served') || message.includes('being served') || message.includes('completed')) {
                     line = '\x1b[1;34m' //bright blue
                 } else if (message.includes('missed cache')) {
                     line = '\x1b[34m' //blue

@@ -5,9 +5,10 @@
             :col-num="24"
             :row-height="30"
             :margin="[12,12]"
-            :is-draggable="true"
-            :is-resizable="true"
+            :is-draggable="!store.getters.options.lockGrid"
+            :is-resizable="!store.getters.options.lockGrid"
             :vertical-compact="true"
+            @layout-updated="saveGridChanges"
     >
         <grid-item v-for="(item, index) in store.getters.layout.grid"
                    :x="item.x"
@@ -16,38 +17,42 @@
                    :h="item.h"
                    :i="item.i"
                    :key="item.i"
-                   :style="{backgroundColor: store.getters.current.secondary + store.getters.alpha, color: store.getters.current.accent}"
+                   :style="{backgroundColor: store.getters.current.secondary + store.getters.alpha}"
                    drag-allow-from=".vue-draggable-handle"
                    drag-ignore-from=".no-drag"
-                   @move="moved"
-                   @resize="resized"
         >
+            <v-container fluid style="width: 100%; height: 100%" :class="store.getters.options.lockGrid ? 'pa-0' : 'pa-4'">
             <chart
+                    :group="store.getters.layout.charts[getIndex(item.i)].type === 'pie' ? '' : 'testing'"
                     class="no-drag"
-                    style="height: 100%;width: 100%; position: absolute"
+                    style="height: 100%;width: 100%;"
                     autoresize
                     :options="store.getters.layout.charts[getIndex(item.i)]"
             />
-            <v-fade-transition>
+            </v-container>
+            <v-fade-transition v-if="!store.getters.options.lockGrid">
                 <v-hover v-slot:default="{ hover }">
-                    <v-icon :style="{position: 'absolute', color: hover ? store.getters.current.textColor : store.getters.current.accent, left: 'calc(50% - 5px)', width: '10px'}"
+                    <v-icon
+                            :style="{position: 'absolute', color: hover ? store.getters.current.textColor : store.getters.current.accent2  + '!important', left: 'calc(50% - 5px)', width: '10px', top: '1px'}"
                             dense small
                             class="vue-draggable-handle">mdi-drag-horizontal-variant
                     </v-icon>
                 </v-hover>
             </v-fade-transition>
-            <v-fade-transition>
+            <v-fade-transition v-if="!store.getters.options.lockGrid">
                 <v-hover v-slot:default="{ hover }">
-                    <v-icon :style="{position: 'absolute', color: hover ? store.getters.current.textColor : store.getters.current.accent, top: '2px', right: '2px'}"
+                    <v-icon
+                            :style="{position: 'absolute', color: hover ? store.getters.current.textColor : store.getters.current.accent2  + '!important', top: '2px', right: '2px'}"
                             dense small
                             @click="store.commit('removeLayoutContainer', index)"
                     >mdi-close
                     </v-icon>
                 </v-hover>
             </v-fade-transition>
-            <v-fade-transition>
+            <v-fade-transition v-if="!store.getters.options.lockGrid">
                 <v-hover v-slot:default="{ hover }">
-                    <v-icon :style="{position: 'absolute', color: hover ? store.getters.current.textColor : store.getters.current.accent, bottom: '2px', right: '2px', zIndex: 1}"
+                    <v-icon
+                            :style="{position: 'absolute', color: hover ? store.getters.current.textColor : store.getters.current.accent2  + '!important', bottom: '2px', right: '2px', zIndex: 1}"
                             dense small
                             class="vue-resizable-handle pa-0"
                     >mdi-resize-bottom-right
@@ -75,11 +80,8 @@
             }
         },
         methods: {
-            moved(i, newX, newY) {
-                store.commit('setSpecificLayout', {i: i, x: newX, y: newY})
-            },
-            resized(i, newH, newW) {
-                store.commit('setSpecificLayout', {i: i, w: newW, h: newH})
+            saveGridChanges() {
+                localStorage.dashboardLayout = JSON.stringify(store.getters.layout.grid)
             },
             getIndex: (id) => {
                 let indx = 0;
@@ -88,6 +90,8 @@
                 })
                 return indx
             }
+        },
+        mounted() {
         },
         computed: {
             update() {

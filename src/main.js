@@ -7,7 +7,6 @@ import './plugins/echarts';
 import VueTimers from 'vue-timers'
 import './registerServiceWorker'
 import VModal from 'vue-js-modal'
-// eslint-disable-next-line no-unused-vars
 import {constructChart, sortData, importData, interpolateData} from "@/constants";
 import moment from "moment";
 import {OverlayScrollbarsComponent} from 'overlayscrollbars-vue';
@@ -76,15 +75,35 @@ fetch("api/pastStats")
 
 
 if (localStorage.hasBackground)
-    store.commit('setHasBg', localStorage.hasBackground === 'true')
+    store.commit('setOption', ['hasBgImage', localStorage.hasBackground === 'true'])
 if (localStorage.showAppBar)
-    store.commit('showAppBar', localStorage.showAppBar === 'true')
+    store.commit('setOption', ['showAppBar', localStorage.showAppBar === 'true'])
 if (localStorage.theme && localStorage.theme !== 'undefined')
     store.commit('setTheme', localStorage.theme);
 else
     store.commit('setTheme', 'light');
+if (localStorage.exp_customTheme)
+    store.commit('setCustom', JSON.parse(localStorage.exp_customTheme))
+if (localStorage.backgroundAlpha)
+    store.commit('setAlpha', parseInt(localStorage.backgroundAlpha))
 if (localStorage.backgroundURL)
-    store.commit('setBgUrl', localStorage.backgroundURL)
+    store.commit('setOption', ['bgImage', localStorage.backgroundURL])
+if (localStorage.consoleLines)
+    store.commit('setConsoleData', JSON.parse(localStorage.consoleLines))
+if (localStorage.lockGrid)
+    store.commit('setOption', ['lockGrid', localStorage.lockGrid === 'true'])
+if (localStorage.exp_connectGraphs)
+    store.commit('setOption', ['exp_connectGraphs', localStorage.exp_connectGraphs === 'true'])
+if (localStorage.exp_showAbout)
+    store.commit('setOption', ['exp_showAbout', localStorage.exp_showAbout === 'true'])
+if (localStorage.exp_showConsole)
+    store.commit('setOption', ['exp_showConsole', localStorage.exp_showConsole === 'true'])
+if (localStorage.exp_consoleGrid)
+    store.commit('setOption', ['exp_consoleGrid', localStorage.exp_consoleGrid === 'true'])
+if (localStorage.exp_showClientSettings)
+    store.commit('setOption', ['exp_showClientSettings', localStorage.exp_showClientSettings === 'true'])
+if (localStorage.superSecret)
+    store.commit('setOption', ['superSecret', localStorage.superSecret === 'true'])
 if (localStorage.dashboardLayout) {
     try {
         store.commit('setLayout', JSON.parse(localStorage.dashboardLayout));
@@ -97,9 +116,6 @@ if (localStorage.dashboardLayout) {
     }
 } else
     store.commit('resetLayout');
-if (localStorage.consoleLines)
-    store.commit('setConsoleData', JSON.parse(localStorage.consoleLines))
-
 new Vue({
     render: h => h(App),
     router,

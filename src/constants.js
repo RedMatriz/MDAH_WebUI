@@ -16,20 +16,60 @@ const dictionary = {
     bytes_on_disk: 'Cache Size',
     bytes_on_disk_c: 'Change in Cache Size',
     //color id
+    // background: store.getters.current.backgroundColor,
+    // text: store.getters.current.textColor,
+    // primary: store.getters.current.primary,
+    // secondary: store.getters.current.secondary,
+    // accent: store.getters.current.accent,
+    // accent1: store.getters.current.accent1,
+    // accent2: store.getters.current.accent2,
+    // red: store.getters.current.red,
+    // yellow: store.getters.current.yellow,
+    // green: store.getters.current.green,
 }
 export const dataUnits = ['YB', 'ZB', 'EB', 'PB', 'TB', 'GB', 'MB', 'KB', 'B']
 export const numberUnits = ['d', 'n', 'o', 'S', 's', 'Q', 'q', 't', 'B', 'M', 'K', '']
+export const biscuitUnits = ['YottaBiscuits', 'ZettaBiscuits', 'ExaBiscuits', 'PetaBiscuits', 'TeraBiscuits', 'GigaBiscuits', 'MegaBiscuits', 'KiloBiscuits', 'Biscuits']
 export const formatNumber = (value, units, flot) => {
     let num = Math.abs(parseFloat(value));
     let sign = parseFloat(value) > 0 ? 1 : -1
     for (let i = 0; i < units.length; i++) {
         let div = Math.pow(10, (units.length - i - 1) * 3);
         if (num >= div)
-            return float(num / div * sign, flot) + units[i]
+            return float(num / div * sign, flot) + ' ' + units[i]
     }
     return float(num * sign, flot)
 }
-const units = [[], dataUnits, numberUnits]
+export const units = [[], dataUnits, numberUnits, biscuitUnits]
+
+function translateColor(input) {
+    switch (input) {
+        case 'background':
+            return store.getters.current.backgroundColor
+        case 'text':
+            return store.getters.current.textColor
+        case 'primary':
+            return store.getters.current.primary
+        case 'secondary':
+            return store.getters.current.secondary
+        case 'active':
+            return store.getters.current.active
+        case 'accent':
+            return store.getters.current.accent
+        case 'accent1':
+            return store.getters.current.accent1
+        case 'accent2':
+            return store.getters.current.accent2
+        case 'red':
+            return store.getters.current.red
+        case 'green':
+            return store.getters.current.green
+        case 'yellow':
+            return store.getters.current.yellow
+        default:
+
+    }
+}
 
 export const translate = (input, reverse) => {
     let translation;
@@ -45,20 +85,32 @@ export const translate = (input, reverse) => {
     }
 }
 
+export const getLightness = (H) => {
+    let r = "0x" + H[1] + H[2];
+    let g = "0x" + H[3] + H[4];
+    let b = "0x" + H[5] + H[6];
+    r /= 255;
+    g /= 255;
+    b /= 255;
+    let l = (Math.max(r, g, b) + Math.min(r, g, b)) / 2;
+    l = +(l * 100).toFixed(1);
+    return l;
+}
+
 export const constructChart = (storedConfig) => {
     let temp = JSON.parse(JSON.stringify(storedConfig));
     if (storedConfig.type === 'graph') {
         temp.title.textStyle = {
             color: store.getters.current.textColor
         }
-        temp.title.top = 10
+        temp.backgroundColor = store.getters.current.secondary
+        temp.title.top = 4
         temp.toolbox = {
-            orient: 'vertical',
-            top: 20,
+            orient: 'horizontal',
+            top: 2,
             right: 0,
-            width: 5,
             iconStyle: {
-                color: store.getters.current.accent,
+                color: store.getters.current.accent2,
                 borderColor: '#00000000'
             },
             emphasis: {
@@ -74,8 +126,8 @@ export const constructChart = (storedConfig) => {
                     show: true,
                     yAxisIndex: 'none',
                     icon: {
-                        zoom: 'M14,17H17V14H19V17H22V19H19V22H17V19H14V17M12,17V19H9V17H12M7,17V19H3V15H5V17H7M3,13V10H5V13H3M3,8V4H7V6H5V8H3M9,4H12V6H9V4M15,4H19V8H17V6H15V4M19,10V12H17V10H19Z',
-                        back: 'M13.5,7A6.5,6.5 0 0,1 20,13.5A6.5,6.5 0 0,1 13.5,20H10V18H13.5C16,18 18,16 18,13.5C18,11 16,9 13.5,9H7.83L10.91,12.09L9.5,13.5L4,8L9.5,2.5L10.92,3.91L7.83,7H13.5M6,18H8V20H6V18Z'
+                        zoom: 'M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z',
+                        back: 'M12.5,8C9.85,8 7.45,9 5.6,10.6L2,7V16H11L7.38,12.38C8.77,11.22 10.54,10.5 12.5,10.5C16.04,10.5 19.05,12.81 20.1,16L22.47,15.22C21.08,11.03 17.15,8 12.5,8Z'
                     },
                     title: {
                         zoom: 'Zoom',
@@ -84,8 +136,13 @@ export const constructChart = (storedConfig) => {
                 },
                 restore: {
                     title: 'Restore',
-                    icon: 'M2 12C2 16.97 6.03 21 11 21C13.39 21 15.68 20.06 17.4 18.4L15.9 16.9C14.63 18.25 12.86 19 11 19C4.76 19 1.64 11.46 6.05 7.05C10.46 2.64 18 5.77 18 12H15L19 16H19.1L23 12H20C20 7.03 15.97 3 11 3C6.03 3 2 7.03 2 12Z',
-                }
+                    icon: 'M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z',
+                },
+                saveAsImage: {
+                    show: true,
+                    title: 'Save',
+                    icon: 'M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z'
+                },
             }
         }
         let offadd = 0
@@ -94,8 +151,8 @@ export const constructChart = (storedConfig) => {
         })
         temp.grid = {
             right: 30 + offadd,
-            left: 20,
-            bottom: 40,
+            left: 30,
+            bottom: store.getters.options.exp_showSlider ? 40 : 10,
             top: 60,
             containLabel: true,
         };
@@ -135,8 +192,12 @@ export const constructChart = (storedConfig) => {
                 type: 'cross',
                 label: {
                     color: store.getters.current.secondary,
-                },
-            }
+                }
+            },
+            textStyle: {
+                color: store.getters.current.secondary,
+            },
+            backgroundColor: store.getters.current.textColor + 'f0'
         };
         temp.tooltip.axisPointer.label.formatter = (point) => {
             if (point.axisDimension === 'x' && point.seriesData[0] && point.seriesData[0].data) {
@@ -147,44 +208,14 @@ export const constructChart = (storedConfig) => {
         temp.series.forEach((x) => {
             if (x.dataId)
                 x.data = store.getters.getDataset(translate(x.dataId, true))
-            switch (x.itemStyle.colorId) {
-                case 'background':
-                    x.itemStyle.color = store.getters.current.backgroundColor
-                    break
-                case 'text':
-                    x.itemStyle.color = store.getters.current.textColor
-                    break
-                case 'primary':
-                    x.itemStyle.color = store.getters.current.primary
-                    break
-                case 'secondary':
-                    x.itemStyle.color = store.getters.current.secondary
-                    break
-                case 'accent':
-                    x.itemStyle.color = store.getters.current.accent
-                    break
-                case 'accent1':
-                    x.itemStyle.color = store.getters.current.accent1
-                    break
-                case 'accent2':
-                    x.itemStyle.color = store.getters.current.accent2
-                    break
-                case 'red':
-                    x.itemStyle.color = store.getters.current.red
-                    break
-                case 'green':
-                    x.itemStyle.color = store.getters.current.green
-                    break
-                case 'yellow':
-                    x.itemStyle.color = store.getters.current.yellow
-                    break
-                default:
-                    break
-            }
+            x.areaStyle = {opacity: 0.05}
+            if (x.itemStyle.colorId)
+                x.itemStyle.color = translateColor(x.itemStyle.colorId)
         })
         temp.dataZoom = [{
             type: 'inside',
         }, {
+            show: store.getters.options.exp_showSlider,
             type: 'slider',
             handleSize: '100%',
             fillerColor: store.getters.current.accent1,
@@ -203,55 +234,97 @@ export const constructChart = (storedConfig) => {
                 color: store.getters.current.textColor
             },
         }];
+        store.watch((state) => state.options.exp_showSlider, () => {
+            temp.dataZoom[1].show = store.getters.options.exp_showSlider
+            temp.grid.bottom = store.getters.options.exp_showSlider ? 40 : 10
+        })
+        store.watch((state) => state.options.current, (theme) => {
+            temp.dataZoom[1].fillerColor = store.getters.themes[theme].accent1
+            temp.dataZoom[1].textStyle.color = store.getters.themes[theme].textColor
+            temp.dataZoom[1].dataBackground.areaStyle.color = store.getters.themes[theme].accent
+            temp.dataZoom[1].dataBackground.lineStyle.color = store.getters.themes[theme].textColor
+            temp.dataZoom[1].handleStyle.color = store.getters.themes[theme].textColor
+            temp.series.forEach((x) => {
+                if (x.itemStyle.colorId)
+                    x.itemStyle.color = translateColor(x.itemStyle.colorId)
+            })
+            temp.yAxis.forEach((x) => {
+                x.axisLine.lineStyle.color = store.getters.themes[theme].textColor;
+            })
+            temp.xAxis.splitLine.lineStyle.color = store.getters.themes[theme].accent1
+            temp.xAxis.axisLine.lineStyle.color = store.getters.themes[theme].textColor
+            temp.tooltip.axisPointer.label.color = store.getters.themes[theme].secondary
+            temp.tooltip.textStyle.color = store.getters.themes[theme].secondary
+            temp.tooltip.backgroundColor = store.getters.themes[theme].textColor + 'f0'
+            temp.legend.inactiveColor = store.getters.themes[theme].accent2;
+            temp.legend.textStyle.color = store.getters.themes[theme].textColor;
+            temp.toolbox.iconStyle.color = store.getters.themes[theme].accent2;
+            temp.toolbox.emphasis.iconStyle.color = store.getters.themes[theme].textColor;
+            temp.toolbox.emphasis.iconStyle.textBackgroundColor = store.getters.themes[theme].secondary;
+            temp.title.textStyle.color = store.getters.themes[theme].textColor
+            temp.backgroundColor = store.getters.themes[theme].secondary
+        })
         return temp
     } else if (storedConfig.type === 'pie') {
         temp.title.textStyle = {
             color: store.getters.current.textColor
         }
-        temp.title.top = 12
+        temp.backgroundColor = store.getters.current.secondary
+        temp.toolbox = {
+            orient: 'vertical',
+            top: 2,
+            right: 0,
+            iconStyle: {
+                color: store.getters.current.accent2,
+                borderColor: '#00000000'
+            },
+            emphasis: {
+                iconStyle: {
+                    textPosition: 'left',
+                    color: store.getters.current.textColor,
+                    textBackgroundColor: store.getters.current.secondary,
+                    borderColor: '#00000000'
+                }
+            },
+            feature: {
+                saveAsImage: {
+                    show: true,
+                    title: 'Save',
+                    icon: 'M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z'
+                }
+            }
+        }
+        temp.title.top = 4
         temp.legend.inactiveColor = store.getters.current.accent2;
         temp.legend.textStyle = {color: store.getters.current.textColor};
         temp.tooltip = {
             trigger: 'item',
-            formatter: ' {b}<br/>{c} ({d}%)'
+            formatter: ' {b}<br/>{c} ({d}%)',
+            textStyle: {
+                color: store.getters.current.secondary,
+            },
+            backgroundColor: store.getters.current.textColor + 'f0'
         }
         temp.series[0].data.forEach((x) => {
             if (x.dataId)
                 x.value = store.getters.getLastValueOfDataset(translate(x.dataId, true))
-            switch (x.itemStyle.colorId) {
-                case 'background':
-                    x.itemStyle.color = store.getters.current.backgroundColor
-                    break
-                case 'text':
-                    x.itemStyle.color = store.getters.current.textColor
-                    break
-                case 'primary':
-                    x.itemStyle.color = store.getters.current.primary
-                    break
-                case 'secondary':
-                    x.itemStyle.color = store.getters.current.secondary
-                    break
-                case 'accent':
-                    x.itemStyle.color = store.getters.current.accent
-                    break
-                case 'accent1':
-                    x.itemStyle.color = store.getters.current.accent1
-                    break
-                case 'accent2':
-                    x.itemStyle.color = store.getters.current.accent2
-                    break
-                case 'red':
-                    x.itemStyle.color = store.getters.current.red
-                    break
-                case 'green':
-                    x.itemStyle.color = store.getters.current.green
-                    break
-                case 'yellow':
-                    x.itemStyle.color = store.getters.current.yellow
-                    break
-                default:
-                    break
-            }
+            if (x.itemStyle.colorId)
+                x.itemStyle.color = translateColor(x.itemStyle.colorId)
+        })
+        store.watch((state) => state.options.current, (theme) => {
+            temp.series[0].data.forEach((x) => {
+                if (x.itemStyle.colorId)
+                    x.itemStyle.color = translateColor(x.itemStyle.colorId)
+            })
+            temp.tooltip.textStyle.color = store.getters.themes[theme].secondary
+            temp.tooltip.backgroundColor = store.getters.themes[theme].textColor + 'f0'
+            temp.legend.inactiveColor = store.getters.themes[theme].accent2;
+            temp.legend.textStyle.color = store.getters.themes[theme].textColor;
+            temp.toolbox.iconStyle.color = store.getters.themes[theme].accent2;
+            temp.toolbox.emphasis.iconStyle.color = store.getters.themes[theme].textColor;
+            temp.toolbox.emphasis.iconStyle.textBackgroundColor = store.getters.themes[theme].secondary;
+            temp.title.textStyle.color = store.getters.themes[theme].textColor
+            temp.backgroundColor = store.getters.themes[theme].secondary
         })
         return temp
     }
@@ -448,65 +521,6 @@ export const interpolateData = (thresholdMS, tolerance) => {
 
 export const float = (number, x) => {
     return number.toFixed(x ? x : 2).replace(/\.?0*$/, '')
-}
-
-//unused
-export const loadData = () => {
-    // if (nextKey && moment(nextKey) - moment(key) > fillframe) {
-    //         let ref = store.getters.data.stats[i + 1][nextKey]
-    //         let lastupdatetime = moment(key)
-    //         let fillpoints = Math.floor((moment(nextKey) - moment(key)) / fillframe)
-    //         let fillhits = (ref.cache_hits - inst.cache_hits) / fillpoints
-    //         let fillmisses = (ref.cache_misses - inst.cache_misses) / fillpoints
-    //         let fillcached = (ref.browser_cached - inst.browser_cached) / fillpoints
-    //         let fillsent = (ref.bytes_sent - inst.bytes_sent) / fillpoints
-    //         let fillreq = (ref.requests_served - inst.requests_served) / fillpoints
-    //         let fillsize = (ref.bytes_on_disk - inst.bytes_on_disk) / fillpoints
-    //         while (moment(nextKey) - lastupdatetime > fillframe) {
-    //             // console.log('ran')
-    //             lastupdatetime.add(store.getters.data.updateInterval, 's')
-    //             let filltime = new Date(lastupdatetime + 0)
-    //             let fillpoint = Math.floor(fillpoints - (moment(nextKey) - lastupdatetime) / fillframe)
-    //             let filldata = {
-    //                 cache_hits: (inst.cache_hits + fillhits * fillpoint).toFixed(0),
-    //                 cache_misses: (inst.cache_misses + fillmisses * fillpoint).toFixed(0),
-    //                 browser_cached: (inst.browser_cached + fillcached * fillpoint).toFixed(0),
-    //                 bytes_sent: (inst.bytes_sent + fillsent * fillpoint).toFixed(0),
-    //                 requests_served: (inst.requests_served + fillreq * fillpoint).toFixed(0),
-    //                 bytes_on_disk: (inst.bytes_on_disk + fillsize * fillpoint).toFixed(0),
-    //             }
-    //             store.commit('spliceStats', [i, JSON.parse('{"' + filltime.toISOString() + '": ' + JSON.stringify(filldata) + '}')]);
-    //             store.commit('pushDate', filltime.toISOString())
-    //             store.commit('pushHits', [filltime, filldata.cache_hits]);
-    //             store.commit('pushHitsChange', [filltime, (fillhits / 1000).toFixed(1)]);
-    //             store.commit('pushMisses', [filltime, filldata.cache_misses]);
-    //             store.commit('pushMissesChange', [filltime, (fillmisses / 1000).toFixed(1)]);
-    //             store.commit('pushCached', [filltime, filldata.browser_cached]);
-    //             store.commit('pushCachedChange', [filltime, (fillcached / 1000).toFixed(1)]);
-    //             store.commit('pushBytesSent', [filltime, filldata.bytes_sent]);
-    //             store.commit('pushBytesSentChange', [filltime, (fillsent / 1000).toFixed(1)]);
-    //             store.commit('pushReqServ', [filltime, filldata.requests_served]);
-    //             store.commit('pushReqServChange', [filltime, (fillreq / 1000).toFixed(1)]);
-    //             store.commit('pushSizeDisk', [filltime, filldata.bytes_on_disk]);
-    //             store.commit('pushSizeDiskChange', [filltime, (fillsize / 1000).toFixed(1)]);
-    //             i++
-    //         }
-    //         localStorage.stats = JSON.stringify(store.getters.data.stats);
-    //     } else {
-    //         store.commit('pushDate', key)
-    //         store.commit('pushHits', [time, inst.cache_hits]);
-    //         store.commit('pushHitsChange', [time, hist ? getCPSWOD(hist.cache_hits, inst.cache_hits, histkey, key) : 0]);
-    //         store.commit('pushMisses', [time, inst.cache_misses]);
-    //         store.commit('pushMissesChange', [time, hist ? getCPSWOD(hist.cache_misses, inst.cache_misses, histkey, key) : 0]);
-    //         store.commit('pushCached', [time, inst.browser_cached]);
-    //         store.commit('pushCachedChange', [time, hist ? getCPSWOD(hist.browser_cached, inst.browser_cached, histkey, key) : 0]);
-    //         store.commit('pushBytesSent', [time, inst.bytes_sent]);
-    //         store.commit('pushBytesSentChange', [time, hist ? getCPSWOD(hist.bytes_sent, inst.bytes_sent, histkey, key) : 0]);
-    //         store.commit('pushReqServ', [time, inst.requests_served]);
-    //         store.commit('pushReqServChange', [time, hist ? getCPSWOD(hist.requests_served, inst.requests_served, histkey, key) : 0]);
-    //         store.commit('pushSizeDisk', [time, inst.bytes_on_disk]);
-    //         store.commit('pushSizeDiskChange', [time, hist ? getCPSWOD(hist.bytes_on_disk, inst.bytes_on_disk, histkey, key) : 0]);
-    //     }
 }
 
 //purely internal testing data

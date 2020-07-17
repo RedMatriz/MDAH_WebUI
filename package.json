@@ -10,6 +10,7 @@
   "dependencies": {
     "core-js": "^3.6.5",
     "echarts": "^4.8.0",
+    "element-resize-event": "^3.0.3",
     "moment": "^2.27.0",
     "overlayscrollbars": "^1.12.0",
     "overlayscrollbars-vue": "^0.2.2",

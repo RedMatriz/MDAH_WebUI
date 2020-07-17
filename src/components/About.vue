@@ -16,16 +16,25 @@
                 </v-row>
             </div>
         </v-container>
-<!--        <v-container fluid class="mt-3"-->
-<!--                     :style="{backgroundColor: $store.getters.current.secondary + $store.getters.alpha}">-->
-<!--            <div v-for="(stat, index) in Object.keys($store.getters.data.datasets)" :key="index"-->
-<!--                 style="width: 50%">-->
-<!--                <h3>{{translate(stat)}}</h3>-->
-<!--                <v-row dense>-->
-<!--                    <v-col><p>{{$store.getters.getLastValueOfDataset(stat)}}</p></v-col>-->
-<!--                </v-row>-->
-<!--            </div>-->
-<!--        </v-container>-->
+        <v-container fluid class="mt-3"
+                     :style="{backgroundColor: $store.getters.current.secondary + $store.getters.alpha}">
+            <div v-for="(att, index) in serverResponse" :key="index" style="width: 50%">
+                <h3>{{att.name}}</h3>
+                <v-row dense>
+                    <v-col><p>{{att.value}}</p></v-col>
+                </v-row>
+            </div>
+        </v-container>
+        <!--        <v-container fluid class="mt-3"-->
+        <!--                     :style="{backgroundColor: $store.getters.current.secondary + $store.getters.alpha}">-->
+        <!--            <div v-for="(stat, index) in Object.keys($store.getters.data.datasets)" :key="index"-->
+        <!--                 style="width: 50%">-->
+        <!--                <h3>{{translate(stat)}}</h3>-->
+        <!--                <v-row dense>-->
+        <!--                    <v-col><p>{{$store.getters.getLastValueOfDataset(stat)}}</p></v-col>-->
+        <!--                </v-row>-->
+        <!--            </div>-->
+        <!--        </v-container>-->
     </v-container>
 </template>
 
@@ -68,6 +77,24 @@
                     longValue: store.getters.getLastValueOfDataset('bytes_on_disk'),
                     shortValue: formatNumber(store.getters.getLastValueOfDataset('bytes_on_disk'), dataUnits),
                 }],
+                serverResponse: [{
+                    name: 'Some Client Setting',
+                    value: 'Whatever that setting was set to'
+                }, {
+                    name: 'Some Client Setting',
+                    value: 'Whatever that setting was set to'
+                }, {
+                    name: 'Some Client Setting',
+                    value: 'Whatever that setting was set to'
+                }, {
+                    name: 'Some Client Setting',
+                    value: 'Whatever that setting was set to'
+                }, {name: 'Some Client Setting',
+                    value: 'Whatever that setting was set to'
+                }, {
+                    name: 'Some Client Setting',
+                    value: 'Whatever that setting was set to'
+                },]
             }
         },
         methods: {
